@@ -1,5 +1,11 @@
 import type { Project, NewProject, Task, NewTask, Item, NewItem } from '@/server/db/schema'
 
+export interface TaskWithProject {
+  task: Task
+  projectName: string | null
+  projectColor: string | null
+}
+
 const BASE = '/api'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -39,19 +45,16 @@ export const api = {
     delete: (id: string) => request<void>(`/items/${id}`, { method: 'DELETE' }),
     reorder: (items: { id: string; position: number }[]) => request<void>('/items/reorder/batch', { method: 'PATCH', body: JSON.stringify({ items }) }),
   },
+  views: {
+    today: () => request<TaskWithProject[]>('/views/today'),
+    upcoming: () => request<TaskWithProject[]>('/views/upcoming'),
+  },
   data: {
-    exportAll: () => request<{ projects: Project[]; tasks: Task[]; items: Item[] }>('/projects').then(async (projects) => {
-      const tasks: Task[] = []
-      const items: Item[] = []
-      for (const p of projects) {
-        const pTasks = await api.tasks.listByProject(p.id)
-        tasks.push(...pTasks)
-        for (const t of pTasks) {
-          const tItems = await api.items.listByTask(t.id)
-          items.push(...tItems)
-        }
-      }
-      return { projects, tasks, items }
-    }),
+    exportAll: () => request<{ projects: Project[]; tasks: Task[]; items: Item[] }>('/data/export'),
+    importAll: (data: { projects: unknown[]; tasks?: unknown[]; items?: unknown[] }) =>
+      request<{ success: boolean; imported: { projects: number; tasks: number; items: number } }>(
+        '/data/import',
+        { method: 'POST', body: JSON.stringify(data) },
+      ),
   },
 }

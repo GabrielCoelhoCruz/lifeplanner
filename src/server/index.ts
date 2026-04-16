@@ -4,6 +4,7 @@ import { projectsRouter } from './routes/projects'
 import { tasksRouter } from './routes/tasks'
 import { itemsRouter } from './routes/items'
 import { dataRouter } from './routes/data'
+import { viewsRouter } from './routes/views'
 
 dotenv.config()
 const app = express()
@@ -13,6 +14,7 @@ app.use('/api/projects', projectsRouter)
 app.use('/api/tasks', tasksRouter)
 app.use('/api/items', itemsRouter)
 app.use('/api/data', dataRouter)
+app.use('/api/views', viewsRouter)
 
 // Global error handler
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

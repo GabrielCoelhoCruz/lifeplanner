@@ -108,17 +108,16 @@ function SettingsPage() {
     setImporting(true)
     try {
       const text = await file.text()
-      const data = JSON.parse(text) as { projects?: Project[]; tasks?: Task[]; items?: Item[] }
+      const data = JSON.parse(text) as { projects?: unknown[]; tasks?: unknown[]; items?: unknown[] }
 
-      if (data.projects) {
-        for (const p of data.projects) {
-          await api.projects.create({ name: p.name, description: p.description, color: p.color })
-        }
+      if (!data.projects || !Array.isArray(data.projects)) {
+        toast.error('Arquivo inválido: nenhum projeto encontrado.')
+        return
       }
-      // Note: tasks and items would need project ID mapping for full import.
-      // This simplified version creates projects only.
-      toast.success('Dados importados com sucesso')
-      window.location.reload()
+
+      const result = await api.data.importAll(data as { projects: unknown[]; tasks?: unknown[]; items?: unknown[] })
+      toast.success(`Importados: ${result.imported.projects} projetos, ${result.imported.tasks} tarefas, ${result.imported.items} itens`)
+      queryClient.invalidateQueries()
     } catch (err) {
       console.error('Import failed:', err)
       toast.error('Erro ao importar dados. Tente novamente.')
