@@ -37,7 +37,7 @@ export function useUpdateItem() {
 export function useDeleteItem() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, taskId }: { id: string; taskId: string }) => api.items.delete(id),
+    mutationFn: ({ id }: { id: string; taskId: string }) => api.items.delete(id),
     onSuccess: (_, { taskId }) => {
       qc.invalidateQueries({ queryKey: itemKeys.byTask(taskId) })
     },

@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
-import type { TaskWithCounts } from '@/lib/api'
 import type { NewTask, Task } from '@/server/db/schema'
 
 export const taskKeys = {
@@ -70,8 +69,8 @@ export function useUpdateTask() {
 export function useDeleteTask() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, projectId }: { id: string; projectId: string }) => api.tasks.delete(id),
-    onSuccess: (_, { projectId }) => {
+    mutationFn: ({ id }: { id: string; projectId: string }) => api.tasks.delete(id),
+    onSuccess: (_data, { projectId }) => {
       qc.invalidateQueries({ queryKey: taskKeys.byProject(projectId) })
       qc.invalidateQueries({ queryKey: viewKeys.today })
       qc.invalidateQueries({ queryKey: viewKeys.upcoming })

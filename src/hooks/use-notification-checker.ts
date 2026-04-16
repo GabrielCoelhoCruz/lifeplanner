@@ -22,19 +22,6 @@ function markTaskNotified(taskId: string) {
   localStorage.setItem(NOTIFIED_KEY, JSON.stringify(arr))
 }
 
-function isWithin24Hours(dueDate: string | Date | null): boolean {
-  if (!dueDate) return false
-  const due = new Date(dueDate)
-  const now = new Date()
-  const diff = due.getTime() - now.getTime()
-  return diff > 0 && diff <= 24 * 60 * 60 * 1000
-}
-
-function isOverdue(dueDate: string | Date | null): boolean {
-  if (!dueDate) return false
-  return new Date(dueDate) < new Date()
-}
-
 function formatDueDate(dueDate: string | Date): string {
   const date = new Date(dueDate)
   const now = new Date()

@@ -88,7 +88,7 @@ export function TaskRow({ task, onToggle, onClick, sortable = false }: TaskRowPr
       </span>
 
       {task.recurrence && task.recurrence !== 'none' && (
-        <ArrowsClockwise size={14} className="text-text-muted shrink-0" title="Tarefa recorrente" />
+        <ArrowsClockwise size={14} className="text-text-muted shrink-0" />
       )}
 
       {(task.itemCount ?? 0) > 0 && (

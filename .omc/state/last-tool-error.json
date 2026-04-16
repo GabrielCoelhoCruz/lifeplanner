@@ -1,7 +1,7 @@
 {
-  "tool_name": "Read",
-  "tool_input_preview": "{\"file_path\":\"C:\\\\Users\\\\Loira\\\\Desktop\\\\planner\\\\tailwind.config.ts\"}",
-  "error": "File does not exist. Note: your current working directory is C:\\Users\\Loira\\Desktop\\planner.",
-  "timestamp": "2026-04-16T01:53:25.072Z",
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"vercel --prod --yes 2>&1\",\"timeout\":300000,\"description\":\"Deploy to Vercel production\"}",
+  "error": "Exit code 1\n<claude-code-hint v=\"1\" type=\"plugin\" value=\"vercel@claude-plugins-official\" />\nRetrieving project…\nDeploying coelhocgabriel-gmailcoms-projects/planner\nUploading [--------------------] (0.0B/760B)\nUploading [====================] (760.0B/760B)\nInspect: https://vercel.com/coelhocgabriel-gmailcoms-projects/planner/HFnBcbjsZr6Z4uGJ2xyPeiDCozSE [3s]\nProduction: https://planner-lo80p6svl-coelhocgabriel-gmailcoms-projects.vercel.app [3s]\nBuilding...\nBuilding: Running build in Washington, D...",
+  "timestamp": "2026-04-16T05:02:44.860Z",
   "retry_count": 1
 }

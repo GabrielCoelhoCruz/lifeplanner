@@ -52,7 +52,7 @@ export function KanbanCard({ task, onClick }: KanbanCardProps) {
       <div className="mt-2 flex items-center gap-2">
         <span className={cn('w-2 h-2 rounded-full', priorityColors[task.priority])} />
         {task.recurrence && task.recurrence !== 'none' && (
-          <ArrowsClockwise size={14} className="text-text-muted shrink-0" title="Tarefa recorrente" />
+          <ArrowsClockwise size={14} className="text-text-muted shrink-0" />
         )}
         {task.dueDate && (
           <span className="text-xs font-mono text-text-muted">
