@@ -21,7 +21,7 @@ export function showTaskNotification(taskTitle: string, timeInfo: string) {
   new Notification('LifePlanner', {
     body: `"${taskTitle}" — prazo em ${timeInfo}`,
     icon: '/icons/icon.svg',
-    tag: `task-reminder`,
+    tag: `task-${taskTitle.slice(0, 20)}`,
     requireInteraction: false,
   })
 }

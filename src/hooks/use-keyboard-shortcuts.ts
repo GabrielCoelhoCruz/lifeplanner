@@ -61,7 +61,11 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
           break
         case 'n':
           e.preventDefault()
-          handlersRef.current.onNewTask?.() || handlersRef.current.onNewProject?.()
+          if (handlersRef.current.onNewTask) {
+            handlersRef.current.onNewTask()
+          } else if (handlersRef.current.onNewProject) {
+            handlersRef.current.onNewProject()
+          }
           break
         case 'p':
           e.preventDefault()

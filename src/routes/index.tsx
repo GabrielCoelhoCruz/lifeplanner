@@ -7,6 +7,7 @@ import { ProjectCard } from '@/components/project-card'
 import { SearchBar } from '@/components/search-bar'
 import { useDebounce } from '@/hooks/use-debounce'
 import { Fab } from '@/components/fab'
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { CreateProjectDialog } from '@/components/create-project-dialog'
 import { EmptyState } from '@/components/empty-state'
 import { IllustrationProjects, IllustrationSearch } from '@/components/illustrations'
@@ -36,6 +37,11 @@ function DashboardPage() {
   const [search, setSearch] = React.useState('')
   const debouncedSearch = useDebounce(search, 300)
   const [createOpen, setCreateOpen] = React.useState(false)
+
+  useKeyboardShortcuts({
+    onNewProject: () => setCreateOpen(true),
+    onFocusSearch: () => document.getElementById('search-input')?.focus(),
+  })
 
   const filtered = React.useMemo(() => {
     if (!projects) return []

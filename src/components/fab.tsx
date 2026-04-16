@@ -1,5 +1,6 @@
 import { Plus } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
+import { usePomodoro } from '@/lib/pomodoro'
 
 interface FabProps {
   onClick: () => void
@@ -7,13 +8,17 @@ interface FabProps {
 }
 
 export function Fab({ onClick, className }: FabProps) {
+  const { isRunning, isPaused } = usePomodoro()
+  const pomodoroActive = isRunning || isPaused
+
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label="Criar novo"
       className={cn(
-        'fixed bottom-5 right-5 md:bottom-8 md:right-8 z-40',
+        'fixed right-5 md:right-8 z-40 transition-all duration-200',
+        pomodoroActive ? 'bottom-20' : 'bottom-5 md:bottom-8',
         'w-14 h-14 rounded-full bg-accent text-white',
         'flex items-center justify-center',
         'shadow-lg hover:scale-110 hover:bg-accent-hover',

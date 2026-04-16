@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useDeleteProject } from '@/hooks/use-projects'
 import { useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
 
 interface DeleteProjectDialogProps {
   projectId: string
@@ -26,6 +27,9 @@ export function DeleteProjectDialog({ projectId, projectName, open, onOpenChange
       onSuccess: () => {
         onOpenChange(false)
         navigate({ to: '/' })
+      },
+      onError: () => {
+        toast.error('Erro ao excluir projeto')
       },
     })
   }

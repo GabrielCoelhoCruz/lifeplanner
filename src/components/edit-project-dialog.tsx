@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useUpdateProject } from '@/hooks/use-projects'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import type { Project } from '@/server/db/schema'
 
@@ -45,7 +46,11 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
       { id: project.id, data: { name: name.trim(), description, color } },
       {
         onSuccess: () => {
+          toast.success('Projeto atualizado')
           onOpenChange(false)
+        },
+        onError: () => {
+          toast.error('Erro ao atualizar projeto')
         },
       }
     )
@@ -94,7 +99,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
                   type="button"
                   onClick={() => setColor(c)}
                   className={cn(
-                    'w-7 h-7 rounded-full transition-all cursor-pointer',
+                    'w-10 h-10 rounded-full transition-all cursor-pointer',
                     color === c
                       ? 'ring-2 ring-offset-2 ring-accent scale-110'
                       : 'hover:scale-110'
