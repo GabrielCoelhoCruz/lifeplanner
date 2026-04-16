@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import { projectsRouter } from './routes/projects'
 import { tasksRouter } from './routes/tasks'
 import { itemsRouter } from './routes/items'
+import { dataRouter } from './routes/data'
 
 dotenv.config()
 const app = express()
@@ -11,6 +12,13 @@ app.use(express.json())
 app.use('/api/projects', projectsRouter)
 app.use('/api/tasks', tasksRouter)
 app.use('/api/items', itemsRouter)
+app.use('/api/data', dataRouter)
+
+// Global error handler
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled error:', err)
+  res.status(500).json({ error: 'Internal server error' })
+})
 
 const PORT = process.env.API_PORT || 3001
 app.listen(PORT, () => {
