@@ -1,8 +1,24 @@
 import * as React from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
 import { useProject } from '@/hooks/use-projects'
-import { useTasks, useUpdateTask } from '@/hooks/use-tasks'
-import { TaskRow } from '@/components/task-row'
+import { useTasks, useUpdateTask, taskKeys } from '@/hooks/use-tasks'
+import { TaskRow, TaskRowOverlay } from '@/components/task-row'
 import { KanbanBoard } from '@/components/kanban-board'
 import { ViewToggle } from '@/components/view-toggle'
 import { SearchBar } from '@/components/search-bar'
@@ -10,6 +26,7 @@ import { Fab } from '@/components/fab'
 import { CreateTaskDialog } from '@/components/create-task-dialog'
 import { TaskDetailPanel } from '@/components/task-detail-panel'
 import { CaretLeft } from '@phosphor-icons/react'
+import { api } from '@/lib/api'
 import type { Task } from '@/server/db/schema'
 
 type View = 'list' | 'kanban'
@@ -25,6 +42,7 @@ function ProjectDetailPage() {
   const { projectId } = Route.useParams()
   const { view } = Route.useSearch()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: project, isLoading: projectLoading } = useProject(projectId)
   const { data: tasks = [], isLoading: tasksLoading } = useTasks(projectId)
   const updateTask = useUpdateTask()
@@ -33,6 +51,7 @@ function ProjectDetailPage() {
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null)
   const [detailOpen, setDetailOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
+  const [activeTask, setActiveTask] = React.useState<Task | null>(null)
 
   const currentView: View = view ?? 'list'
 
@@ -41,6 +60,12 @@ function ProjectDetailPage() {
     const query = search.toLowerCase()
     return tasks.filter((t) => t.title.toLowerCase().includes(query))
   }, [tasks, search])
+
+  const taskIds = React.useMemo(() => filteredTasks.map((t) => t.id), [filteredTasks])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  )
 
   function setView(v: View) {
     navigate({
@@ -61,6 +86,43 @@ function ProjectDetailPage() {
   function handleTaskClick(task: Task) {
     setSelectedTaskId(task.id)
     setDetailOpen(true)
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const dragged = filteredTasks.find((t) => t.id === event.active.id)
+    setActiveTask(dragged ?? null)
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    setActiveTask(null)
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = filteredTasks.findIndex((t) => t.id === active.id)
+    const newIndex = filteredTasks.findIndex((t) => t.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(filteredTasks, oldIndex, newIndex)
+
+    // Optimistic update
+    queryClient.setQueryData(taskKeys.byProject(projectId), (old: Task[] | undefined) => {
+      if (!old) return old
+      const reorderedIds = reordered.map((t) => t.id)
+      const updated = old.map((t) => {
+        const idx = reorderedIds.indexOf(t.id)
+        if (idx !== -1) return { ...t, position: idx }
+        return t
+      })
+      updated.sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      return updated
+    })
+
+    const orderItems = reordered.map((t, i) => ({ id: t.id, position: i }))
+    try {
+      await api.tasks.reorder(orderItems)
+    } catch {
+      queryClient.invalidateQueries({ queryKey: taskKeys.byProject(projectId) })
+    }
   }
 
   if (projectLoading) {
@@ -141,18 +203,35 @@ function ProjectDetailPage() {
             </p>
           </div>
         ) : currentView === 'list' ? (
-          <div className="border border-border rounded-lg overflow-hidden bg-bg-elevated">
-            {filteredTasks.map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                onToggle={handleToggle}
-                onClick={handleTaskClick}
-              />
-            ))}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+              <div className="border border-border rounded-lg overflow-hidden bg-bg-elevated">
+                {filteredTasks.map((task) => (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    onToggle={handleToggle}
+                    onClick={handleTaskClick}
+                    sortable
+                  />
+                ))}
+              </div>
+            </SortableContext>
+            <DragOverlay dropAnimation={null}>
+              {activeTask ? <TaskRowOverlay task={activeTask} /> : null}
+            </DragOverlay>
+          </DndContext>
         ) : (
-          <KanbanBoard tasks={filteredTasks} onTaskClick={handleTaskClick} />
+          <KanbanBoard
+            tasks={filteredTasks}
+            onTaskClick={handleTaskClick}
+            projectId={projectId}
+          />
         )}
       </div>
 
