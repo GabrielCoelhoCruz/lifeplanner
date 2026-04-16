@@ -7,12 +7,14 @@ export const itemsRouter = Router()
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-itemsRouter.get('/task/:taskId', async (req, res) => {
+// GET /api/items?taskId=xxx — list items by task (consolidated URL)
+itemsRouter.get('/', async (req, res) => {
+  const taskId = req.query.taskId as string
+  if (!taskId || !UUID_REGEX.test(taskId)) {
+    return res.status(400).json({ error: 'taskId query param é obrigatório e deve ser um UUID válido' })
+  }
   try {
-    if (!UUID_REGEX.test(req.params.taskId)) {
-      return res.status(400).json({ error: 'ID inválido' })
-    }
-    const result = await db.select().from(items).where(eq(items.taskId, req.params.taskId)).orderBy(asc(items.position))
+    const result = await db.select().from(items).where(eq(items.taskId, taskId)).orderBy(asc(items.position))
     res.json(result)
   } catch (error) {
     console.error('Error fetching items:', error)
@@ -90,6 +92,32 @@ itemsRouter.delete('/:id', async (req, res) => {
     res.status(204).send()
   } catch (error) {
     console.error('Error deleting item:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+// PATCH /api/items — reorder items (consolidated URL)
+itemsRouter.patch('/', async (req, res) => {
+  try {
+    const { items: orderItems } = req.body as { items: { id: string; position: number }[] }
+
+    if (!Array.isArray(orderItems) || orderItems.length === 0) {
+      return res.status(400).json({ error: 'Lista de itens é obrigatória' })
+    }
+
+    for (const item of orderItems) {
+      if (!item.id || !UUID_REGEX.test(item.id)) {
+        return res.status(400).json({ error: `ID inválido: ${item.id}` })
+      }
+      if (typeof item.position !== 'number' || !Number.isFinite(item.position)) {
+        return res.status(400).json({ error: `Posição inválida para item ${item.id}` })
+      }
+    }
+
+    await Promise.all(orderItems.map((item) => db.update(items).set({ position: item.position }).where(eq(items.id, item.id))))
+    res.json({ success: true })
+  } catch (error) {
+    console.error('Error reordering items:', error)
     res.status(500).json({ error: 'Internal server error' })
   }
 })

@@ -41,12 +41,14 @@ function calculateNextDueDate(
   return base
 }
 
-tasksRouter.get('/project/:projectId', async (req, res) => {
+// GET /api/tasks?projectId=xxx — list tasks by project (consolidated URL)
+tasksRouter.get('/', async (req, res) => {
+  const projectId = req.query.projectId as string
+  if (!projectId || !UUID_REGEX.test(projectId)) {
+    return res.status(400).json({ error: 'projectId query param é obrigatório e deve ser um UUID válido' })
+  }
   try {
-    if (!UUID_REGEX.test(req.params.projectId)) {
-      return res.status(400).json({ error: 'ID inválido' })
-    }
-    const taskList = await db.select().from(tasks).where(eq(tasks.projectId, req.params.projectId)).orderBy(asc(tasks.position))
+    const taskList = await db.select().from(tasks).where(eq(tasks.projectId, projectId)).orderBy(asc(tasks.position))
 
     const taskIds = taskList.map(t => t.id)
     if (taskIds.length > 0) {
@@ -201,6 +203,39 @@ tasksRouter.delete('/:id', async (req, res) => {
     res.status(204).send()
   } catch (error) {
     console.error('Error deleting task:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+// PATCH /api/tasks — reorder tasks (consolidated URL, same as /reorder/batch)
+tasksRouter.patch('/', async (req, res) => {
+  try {
+    const { items: orderItems } = req.body as { items: { id: string; position: number; status?: string }[] }
+
+    if (!Array.isArray(orderItems) || orderItems.length === 0) {
+      return res.status(400).json({ error: 'Lista de itens é obrigatória' })
+    }
+
+    for (const item of orderItems) {
+      if (!item.id || !UUID_REGEX.test(item.id)) {
+        return res.status(400).json({ error: `ID inválido: ${item.id}` })
+      }
+      if (typeof item.position !== 'number' || !Number.isFinite(item.position)) {
+        return res.status(400).json({ error: `Posição inválida para item ${item.id}` })
+      }
+      if (item.status !== undefined && !VALID_STATUSES.includes(item.status as typeof VALID_STATUSES[number])) {
+        return res.status(400).json({ error: `Status inválido para item ${item.id}` })
+      }
+    }
+
+    await Promise.all(orderItems.map((item) => {
+      const updates: Record<string, unknown> = { position: item.position }
+      if (item.status) updates.status = item.status
+      return db.update(tasks).set(updates).where(eq(tasks.id, item.id))
+    }))
+    res.json({ success: true })
+  } catch (error) {
+    console.error('Error reordering tasks:', error)
     res.status(500).json({ error: 'Internal server error' })
   }
 })
