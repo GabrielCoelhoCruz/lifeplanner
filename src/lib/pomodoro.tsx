@@ -42,16 +42,17 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     setIsRunning(false)
     setIsPaused(false)
 
-    // Show notification
-    if (Notification.permission === 'granted') {
+    // Show notification (browser-only)
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
       new Notification('LifePlanner — Pomodoro concluido!', {
         body: `Sessao de foco para "${activeTask?.title}" finalizada. Hora de uma pausa!`,
         icon: '/icons/icon.svg',
       })
     }
 
-    // Play a subtle sound via Web Audio API
+    // Play a subtle sound via Web Audio API (browser-only)
     try {
+      if (typeof window === 'undefined') throw new Error('SSR')
       const audioCtx = new AudioContext()
       const oscillator = audioCtx.createOscillator()
       const gain = audioCtx.createGain()

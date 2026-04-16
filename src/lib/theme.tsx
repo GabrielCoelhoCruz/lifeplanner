@@ -18,9 +18,18 @@ function getInitialTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme)
+  // Always start with 'light' on server to match the inline script default,
+  // then sync with actual value on mount to avoid hydration mismatch
+  const [theme, setThemeState] = useState<Theme>('light')
 
   useEffect(() => {
+    // On mount, read the real theme (set by inline script before hydration)
+    const actual = (document.documentElement.getAttribute('data-theme') as Theme) || getInitialTheme()
+    setThemeState(actual)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('settings:theme', theme)
   }, [theme])

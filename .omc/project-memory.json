@@ -181,27 +181,39 @@
       "type": "directory"
     },
     {
-      "path": "src\\components\\task-detail-panel.tsx",
-      "accessCount": 23,
-      "lastAccessed": 1776315810284,
+      "path": "src\\lib\\api.ts",
+      "accessCount": 24,
+      "lastAccessed": 1776344874104,
       "type": "file"
     },
     {
-      "path": "src\\lib\\api.ts",
-      "accessCount": 23,
-      "lastAccessed": 1776342838843,
+      "path": "src\\components\\task-detail-panel.tsx",
+      "accessCount": 24,
+      "lastAccessed": 1776344884084,
       "type": "file"
     },
     {
       "path": "src\\routes\\projects.$projectId.tsx",
-      "accessCount": 22,
-      "lastAccessed": 1776308861704,
+      "accessCount": 23,
+      "lastAccessed": 1776344866552,
       "type": "file"
     },
     {
       "path": "src\\routes\\index.tsx",
+      "accessCount": 22,
+      "lastAccessed": 1776344866283,
+      "type": "file"
+    },
+    {
+      "path": "",
       "accessCount": 21,
-      "lastAccessed": 1776310294923,
+      "lastAccessed": 1776344916348,
+      "type": "directory"
+    },
+    {
+      "path": "src\\routes\\__root.tsx",
+      "accessCount": 21,
+      "lastAccessed": 1776349249716,
       "type": "file"
     },
     {
@@ -212,32 +224,20 @@
     },
     {
       "path": "src\\hooks\\use-tasks.ts",
-      "accessCount": 18,
-      "lastAccessed": 1776316549311,
+      "accessCount": 19,
+      "lastAccessed": 1776344875596,
       "type": "file"
     },
     {
-      "path": "",
-      "accessCount": 16,
-      "lastAccessed": 1776316395324,
-      "type": "directory"
-    },
-    {
       "path": "src\\routes\\settings.tsx",
-      "accessCount": 14,
-      "lastAccessed": 1776308862065,
+      "accessCount": 15,
+      "lastAccessed": 1776344866773,
       "type": "file"
     },
     {
       "path": "src\\server\\index.ts",
       "accessCount": 14,
       "lastAccessed": 1776342358574,
-      "type": "file"
-    },
-    {
-      "path": "src\\routes\\__root.tsx",
-      "accessCount": 14,
-      "lastAccessed": 1776342652426,
       "type": "file"
     },
     {
@@ -254,14 +254,14 @@
     },
     {
       "path": "src\\components\\kanban-board.tsx",
-      "accessCount": 11,
-      "lastAccessed": 1776308869426,
+      "accessCount": 12,
+      "lastAccessed": 1776344884627,
       "type": "file"
     },
     {
       "path": "src\\server\\db\\schema.ts",
-      "accessCount": 10,
-      "lastAccessed": 1776342358359,
+      "accessCount": 11,
+      "lastAccessed": 1776344873156,
       "type": "file"
     },
     {
@@ -284,20 +284,32 @@
     },
     {
       "path": "src\\routes\\today.tsx",
-      "accessCount": 8,
-      "lastAccessed": 1776308861768,
-      "type": "file"
-    },
-    {
-      "path": "src\\index.css",
-      "accessCount": 8,
-      "lastAccessed": 1776342358560,
+      "accessCount": 9,
+      "lastAccessed": 1776344866369,
       "type": "file"
     },
     {
       "path": "src\\server\\db\\index.ts",
+      "accessCount": 9,
+      "lastAccessed": 1776344873654,
+      "type": "file"
+    },
+    {
+      "path": "src\\index.css",
+      "accessCount": 9,
+      "lastAccessed": 1776344905670,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\notifications.ts",
+      "accessCount": 9,
+      "lastAccessed": 1776349276225,
+      "type": "file"
+    },
+    {
+      "path": "src\\hooks\\use-notification-checker.ts",
       "accessCount": 8,
-      "lastAccessed": 1776342797590,
+      "lastAccessed": 1776344876491,
       "type": "file"
     },
     {
@@ -313,21 +325,9 @@
       "type": "file"
     },
     {
-      "path": "src\\hooks\\use-notification-checker.ts",
-      "accessCount": 7,
-      "lastAccessed": 1776315838229,
-      "type": "file"
-    },
-    {
       "path": "src\\components\\layout\\header.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1776308881140,
-      "type": "file"
-    },
-    {
-      "path": "src\\lib\\notifications.ts",
-      "accessCount": 6,
-      "lastAccessed": 1776310268823,
+      "accessCount": 7,
+      "lastAccessed": 1776344885997,
       "type": "file"
     },
     {
@@ -350,14 +350,32 @@
     },
     {
       "path": "src\\hooks\\use-keyboard-shortcuts.ts",
-      "accessCount": 4,
-      "lastAccessed": 1776310264534,
+      "accessCount": 5,
+      "lastAccessed": 1776344876156,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\pomodoro.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1776349263032,
       "type": "file"
     },
     {
       "path": "src\\components\\delete-project-dialog.tsx",
       "accessCount": 4,
       "lastAccessed": 1776310286296,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\pomodoro-bar.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1776344885494,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\date.ts",
+      "accessCount": 4,
+      "lastAccessed": 1776344913861,
       "type": "file"
     },
     {
@@ -373,15 +391,21 @@
       "type": "file"
     },
     {
-      "path": "src\\lib\\date.ts",
+      "path": "src\\components\\quick-add-task.tsx",
       "accessCount": 3,
-      "lastAccessed": 1776308888310,
+      "lastAccessed": 1776344885190,
       "type": "file"
     },
     {
-      "path": "src\\components\\pomodoro-bar.tsx",
+      "path": "src\\components\\shortcuts-help.tsx",
       "accessCount": 3,
-      "lastAccessed": 1776310250795,
+      "lastAccessed": 1776344886446,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\item-row.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1776344927217,
       "type": "file"
     },
     {
@@ -391,39 +415,15 @@
       "type": "file"
     },
     {
-      "path": "src\\components\\item-row.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1776308868960,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\quick-add-task.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1776308870389,
-      "type": "file"
-    },
-    {
       "path": "src\\components\\create-project-dialog.tsx",
       "accessCount": 2,
       "lastAccessed": 1776308870785,
       "type": "file"
     },
     {
-      "path": "src\\components\\shortcuts-help.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1776308880217,
-      "type": "file"
-    },
-    {
       "path": "src\\components\\empty-state.tsx",
       "accessCount": 2,
       "lastAccessed": 1776308880682,
-      "type": "file"
-    },
-    {
-      "path": "src\\lib\\pomodoro.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1776308886897,
       "type": "file"
     },
     {

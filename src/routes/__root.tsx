@@ -19,12 +19,6 @@ import { ShortcutsHelp } from '@/components/shortcuts-help'
 import { PomodoroBar } from '@/components/pomodoro-bar'
 import appCss from '@/index.css?url'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { staleTime: 1000 * 60 },
-  },
-})
-
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -57,6 +51,10 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: { queries: { staleTime: 1000 * 60 } },
+  }))
+
   return (
     <html>
       <head>

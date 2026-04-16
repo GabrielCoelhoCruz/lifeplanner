@@ -1,5 +1,7 @@
+const isBrowser = typeof window !== 'undefined'
+
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (!('Notification' in window)) return false
+  if (!isBrowser || !('Notification' in window)) return false
   if (Notification.permission === 'granted') return true
   if (Notification.permission === 'denied') return false
   const result = await Notification.requestPermission()
@@ -7,14 +9,17 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 export function getNotificationSetting(): boolean {
+  if (!isBrowser) return false
   return localStorage.getItem('lifeplanner-notifications') === 'true'
 }
 
 export function setNotificationSetting(enabled: boolean) {
+  if (!isBrowser) return
   localStorage.setItem('lifeplanner-notifications', String(enabled))
 }
 
 export function showTaskNotification(taskTitle: string, timeInfo: string) {
+  if (!isBrowser) return
   if (!getNotificationSetting()) return
   if (Notification.permission !== 'granted') return
 

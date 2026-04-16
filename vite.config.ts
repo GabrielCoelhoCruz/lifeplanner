@@ -18,6 +18,6 @@ export default defineConfig({
     tailwindcss(),
     tanstackStart(),
     viteReact(),
-    nitro(),
+    nitro({ preset: 'vercel' }),
   ],
 })
