@@ -40,14 +40,28 @@ async function handleAuthProxy(request: Request): Promise<Response> {
   // Path after "/api/auth/" — Better Auth routes like "get-session",
   // "sign-in/email", "callback/google", etc.
   const suffix = url.pathname.replace(/^\/api\/auth\/?/, '')
-  const upstreamUrl = `${AUTH_UPSTREAM.replace(/\/$/, '')}/${suffix}${url.search}`
+  const upstreamBase = AUTH_UPSTREAM.replace(/\/$/, '')
+  const upstreamUrl = `${upstreamBase}/${suffix}${url.search}`
+  const upstreamOrigin = new URL(upstreamBase).origin
 
-  // Forward method + headers (minus host) + body.
+  // Forward method + headers + body. Strip hop-by-hop headers; rewrite
+  // Origin/Referer so Better Auth's trustedOrigins check sees a same-origin
+  // call instead of our app domain (the upstream only trusts its own domain).
+  const stripHeaders = new Set([
+    'host',
+    'connection',
+    'content-length',
+    'accept-encoding',
+  ])
   const forwardedHeaders = new Headers()
   request.headers.forEach((val, key) => {
-    if (key.toLowerCase() === 'host') return
+    const lower = key.toLowerCase()
+    if (stripHeaders.has(lower)) return
+    if (lower === 'origin' || lower === 'referer') return
     forwardedHeaders.set(key, val)
   })
+  forwardedHeaders.set('origin', upstreamOrigin)
+  forwardedHeaders.set('referer', `${upstreamOrigin}/`)
 
   const init: RequestInit = {
     method: request.method,
