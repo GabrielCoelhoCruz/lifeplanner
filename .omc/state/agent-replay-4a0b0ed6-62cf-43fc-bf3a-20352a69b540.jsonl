@@ -1,0 +1,5 @@
+{"t":0,"agent":"system","event":"skill_invoked","skill_name":"frontend-design"}
+{"t":0,"agent":"system","event":"skill_invoked","skill_name":"figma:figma-use"}
+{"t":0,"agent":"system","event":"skill_invoked","skill_name":"superpowers:writing-plans"}
+{"t":0,"agent":"system","event":"skill_invoked","skill_name":"superpowers:subagent-driven-development"}
+{"t":0,"agent":"a232d44","agent_type":"general-purpose","event":"agent_start","parent_mode":"none"}
