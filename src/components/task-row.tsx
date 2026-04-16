@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Circle, CheckCircle, DotsSixVertical } from '@phosphor-icons/react'
+import { Circle, CheckCircle, DotsSixVertical, ArrowsClockwise } from '@phosphor-icons/react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Task } from '@/server/db/schema'
@@ -86,6 +86,10 @@ export function TaskRow({ task, onToggle, onClick, sortable = false }: TaskRowPr
       >
         {task.title}
       </span>
+
+      {task.recurrence && task.recurrence !== 'none' && (
+        <ArrowsClockwise size={14} className="text-text-muted shrink-0" title="Tarefa recorrente" />
+      )}
 
       {(task.itemCount ?? 0) > 0 && (
         <div className="flex items-center gap-1.5 shrink-0">

@@ -2,6 +2,7 @@ import { pgTable, uuid, text, timestamp, integer, boolean, pgEnum } from 'drizzl
 
 export const priorityEnum = pgEnum('priority', ['high', 'medium', 'low'])
 export const statusEnum = pgEnum('status', ['todo', 'in_progress', 'done'])
+export const recurrenceEnum = pgEnum('recurrence', ['daily', 'weekly', 'monthly', 'weekdays', 'none'])
 
 export const projects = pgTable('projects', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -22,6 +23,8 @@ export const tasks = pgTable('tasks', {
   status: statusEnum('status').default('todo').notNull(),
   dueDate: timestamp('due_date'),
   position: integer('position').default(0),
+  recurrence: recurrenceEnum('recurrence').default('none').notNull(),
+  recurrenceDays: text('recurrence_days'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

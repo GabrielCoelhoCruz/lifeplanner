@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PriorityBadge } from './priority-badge'
+import { ArrowsClockwise } from '@phosphor-icons/react'
 import { useCreateTask } from '@/hooks/use-tasks'
 import { toast } from 'sonner'
 import type { Task } from '@/server/db/schema'
@@ -25,7 +26,16 @@ export function CreateTaskDialog({ projectId, open, onOpenChange }: CreateTaskDi
   const [description, setDescription] = React.useState('')
   const [priority, setPriority] = React.useState<Task['priority']>('medium')
   const [dueDate, setDueDate] = React.useState('')
+  const [recurrence, setRecurrence] = React.useState<string>('none')
   const createTask = useCreateTask()
+
+  const recurrenceOptions = [
+    { value: 'none', label: 'Sem repetição' },
+    { value: 'daily', label: 'Diariamente' },
+    { value: 'weekdays', label: 'Dias úteis (Seg-Sex)' },
+    { value: 'weekly', label: 'Semanalmente' },
+    { value: 'monthly', label: 'Mensalmente' },
+  ]
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -37,6 +47,7 @@ export function CreateTaskDialog({ projectId, open, onOpenChange }: CreateTaskDi
         description,
         priority,
         dueDate: dueDate ? new Date(dueDate + 'T00:00:00') : undefined,
+        recurrence: recurrence as Task['recurrence'],
       },
       {
         onSuccess: () => {
@@ -44,6 +55,7 @@ export function CreateTaskDialog({ projectId, open, onOpenChange }: CreateTaskDi
           setDescription('')
           setPriority('medium')
           setDueDate('')
+          setRecurrence('none')
           onOpenChange(false)
           toast.success('Tarefa criada')
         },
@@ -114,6 +126,21 @@ export function CreateTaskDialog({ projectId, open, onOpenChange }: CreateTaskDi
               onChange={(e) => setDueDate(e.target.value)}
               className="mt-1"
             />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-text-muted uppercase tracking-wider flex items-center gap-1">
+              <ArrowsClockwise size={14} />
+              Repetição
+            </label>
+            <select
+              value={recurrence}
+              onChange={(e) => setRecurrence(e.target.value)}
+              className="mt-1 w-full rounded-md border border-border bg-bg-elevated px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              {recurrenceOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>

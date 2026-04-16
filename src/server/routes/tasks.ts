@@ -9,6 +9,38 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 const VALID_PRIORITIES = ['high', 'medium', 'low'] as const
 const VALID_STATUSES = ['todo', 'in_progress', 'done'] as const
 
+function calculateNextDueDate(
+  currentDueDate: Date | null,
+  recurrence: string,
+  recurrenceDays: string | null
+): Date {
+  const base = currentDueDate ? new Date(currentDueDate) : new Date()
+
+  switch (recurrence) {
+    case 'daily':
+      base.setDate(base.getDate() + 1)
+      break
+    case 'weekly':
+      base.setDate(base.getDate() + 7)
+      break
+    case 'monthly':
+      base.setMonth(base.getMonth() + 1)
+      break
+    case 'weekdays': {
+      const days = (recurrenceDays || '1,2,3,4,5').split(',').map(Number)
+      const next = new Date(base)
+      next.setDate(next.getDate() + 1)
+      let safety = 0
+      while (!days.includes(next.getDay()) && safety < 7) {
+        next.setDate(next.getDate() + 1)
+        safety++
+      }
+      return next
+    }
+  }
+  return base
+}
+
 tasksRouter.get('/project/:projectId', async (req, res) => {
   try {
     if (!UUID_REGEX.test(req.params.projectId)) {
@@ -62,7 +94,7 @@ tasksRouter.get('/:id', async (req, res) => {
 
 tasksRouter.post('/', async (req, res) => {
   try {
-    const { projectId, title, description, priority, status, dueDate } = req.body
+    const { projectId, title, description, priority, status, dueDate, recurrence, recurrenceDays } = req.body
 
     if (!projectId || typeof projectId !== 'string' || !UUID_REGEX.test(projectId)) {
       return res.status(400).json({ error: 'projectId é obrigatório e deve ser um UUID válido' })
@@ -87,6 +119,8 @@ tasksRouter.post('/', async (req, res) => {
       priority,
       status,
       dueDate: dueDate ? new Date(dueDate) : null,
+      recurrence: recurrence || 'none',
+      recurrenceDays: recurrenceDays || null,
     }).returning()
     res.status(201).json(result)
   } catch (error) {
@@ -101,7 +135,7 @@ tasksRouter.patch('/:id', async (req, res) => {
       return res.status(400).json({ error: 'ID inválido' })
     }
 
-    const { title, description, priority, status, dueDate, position } = req.body
+    const { title, description, priority, status, dueDate, position, recurrence, recurrenceDays } = req.body
 
     if (title !== undefined && (typeof title !== 'string' || !title.trim())) {
       return res.status(400).json({ error: 'Título deve ser uma string não vazia' })
@@ -119,7 +153,7 @@ tasksRouter.patch('/:id', async (req, res) => {
       return res.status(400).json({ error: 'Posição deve ser um número válido' })
     }
 
-    if (title === undefined && description === undefined && priority === undefined && status === undefined && dueDate === undefined && position === undefined) {
+    if (title === undefined && description === undefined && priority === undefined && status === undefined && dueDate === undefined && position === undefined && recurrence === undefined && recurrenceDays === undefined) {
       return res.status(400).json({ error: 'Pelo menos um campo deve ser fornecido para atualização' })
     }
 
@@ -130,8 +164,27 @@ tasksRouter.patch('/:id', async (req, res) => {
     if (status !== undefined) updates.status = status
     if (dueDate !== undefined) updates.dueDate = dueDate ? new Date(dueDate) : null
     if (position !== undefined) updates.position = position
+    if (recurrence !== undefined) updates.recurrence = recurrence
+    if (recurrenceDays !== undefined) updates.recurrenceDays = recurrenceDays
     const [result] = await db.update(tasks).set(updates).where(eq(tasks.id, req.params.id)).returning()
     if (!result) return res.status(404).json({ error: 'Task not found' })
+
+    // Auto-create next occurrence for recurring tasks marked as done
+    if (updates.status === 'done' && result.recurrence && result.recurrence !== 'none') {
+      const nextDueDate = calculateNextDueDate(result.dueDate, result.recurrence, result.recurrenceDays)
+      await db.insert(tasks).values({
+        projectId: result.projectId,
+        title: result.title,
+        description: result.description,
+        priority: result.priority,
+        status: 'todo',
+        dueDate: nextDueDate,
+        position: result.position,
+        recurrence: result.recurrence,
+        recurrenceDays: result.recurrenceDays,
+      })
+    }
+
     res.json(result)
   } catch (error) {
     console.error('Error updating task:', error)
