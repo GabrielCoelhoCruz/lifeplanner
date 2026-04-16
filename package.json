@@ -21,6 +21,7 @@
     "@phosphor-icons/react": "^2.1.10",
     "@tanstack/react-query": "^5.99.0",
     "@tanstack/react-router": "^1.168.22",
+    "@vercel/node": "^5.7.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",

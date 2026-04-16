@@ -175,16 +175,16 @@
   },
   "hotPaths": [
     {
+      "path": "src",
+      "accessCount": 24,
+      "lastAccessed": 1776316544314,
+      "type": "directory"
+    },
+    {
       "path": "src\\components\\task-detail-panel.tsx",
       "accessCount": 23,
       "lastAccessed": 1776315810284,
       "type": "file"
-    },
-    {
-      "path": "src",
-      "accessCount": 23,
-      "lastAccessed": 1776315849496,
-      "type": "directory"
     },
     {
       "path": "src\\routes\\projects.$projectId.tsx",
@@ -200,20 +200,20 @@
     },
     {
       "path": "src\\hooks\\use-tasks.ts",
-      "accessCount": 17,
-      "lastAccessed": 1776315866811,
+      "accessCount": 18,
+      "lastAccessed": 1776316549311,
       "type": "file"
     },
     {
       "path": "src\\lib\\api.ts",
-      "accessCount": 16,
-      "lastAccessed": 1776310241103,
+      "accessCount": 17,
+      "lastAccessed": 1776316548339,
       "type": "file"
     },
     {
       "path": "",
-      "accessCount": 15,
-      "lastAccessed": 1776307751818,
+      "accessCount": 16,
+      "lastAccessed": 1776316395324,
       "type": "directory"
     },
     {
@@ -224,8 +224,8 @@
     },
     {
       "path": "src\\server\\routes\\tasks.ts",
-      "accessCount": 13,
-      "lastAccessed": 1776308897401,
+      "accessCount": 14,
+      "lastAccessed": 1776316386883,
       "type": "file"
     },
     {
@@ -241,6 +241,12 @@
       "type": "file"
     },
     {
+      "path": "src\\server\\index.ts",
+      "accessCount": 12,
+      "lastAccessed": 1776316558035,
+      "type": "file"
+    },
+    {
       "path": "src\\routes\\__root.tsx",
       "accessCount": 11,
       "lastAccessed": 1776308860564,
@@ -253,21 +259,15 @@
       "type": "file"
     },
     {
-      "path": "src\\server\\index.ts",
-      "accessCount": 11,
-      "lastAccessed": 1776308903168,
+      "path": "src\\server\\db\\schema.ts",
+      "accessCount": 9,
+      "lastAccessed": 1776316385948,
       "type": "file"
     },
     {
       "path": "src\\routes\\today.tsx",
       "accessCount": 8,
       "lastAccessed": 1776308861768,
-      "type": "file"
-    },
-    {
-      "path": "src\\server\\db\\schema.ts",
-      "accessCount": 8,
-      "lastAccessed": 1776308896481,
       "type": "file"
     },
     {
@@ -307,27 +307,27 @@
       "type": "file"
     },
     {
+      "path": "src\\server\\db\\index.ts",
+      "accessCount": 6,
+      "lastAccessed": 1776316385393,
+      "type": "file"
+    },
+    {
       "path": "src\\server\\routes\\projects.ts",
-      "accessCount": 5,
-      "lastAccessed": 1776308896937,
+      "accessCount": 6,
+      "lastAccessed": 1776316386312,
       "type": "file"
     },
     {
       "path": "src\\server\\routes\\items.ts",
-      "accessCount": 5,
-      "lastAccessed": 1776308897879,
+      "accessCount": 6,
+      "lastAccessed": 1776316387297,
       "type": "file"
     },
     {
       "path": "src\\components\\search-bar.tsx",
       "accessCount": 5,
       "lastAccessed": 1776308904173,
-      "type": "file"
-    },
-    {
-      "path": "src\\server\\db\\index.ts",
-      "accessCount": 5,
-      "lastAccessed": 1776308931760,
       "type": "file"
     },
     {
@@ -338,8 +338,8 @@
     },
     {
       "path": "src\\server\\routes\\data.ts",
-      "accessCount": 4,
-      "lastAccessed": 1776310261881,
+      "accessCount": 5,
+      "lastAccessed": 1776316387386,
       "type": "file"
     },
     {
@@ -376,6 +376,12 @@
       "path": "src\\components\\pomodoro-bar.tsx",
       "accessCount": 3,
       "lastAccessed": 1776310250795,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\routes\\views.ts",
+      "accessCount": 3,
+      "lastAccessed": 1776316387931,
       "type": "file"
     },
     {
@@ -424,12 +430,6 @@
       "path": "src\\hooks\\use-debounce.ts",
       "accessCount": 2,
       "lastAccessed": 1776308895144,
-      "type": "file"
-    },
-    {
-      "path": "src\\server\\routes\\views.ts",
-      "accessCount": 2,
-      "lastAccessed": 1776308902997,
       "type": "file"
     },
     {
