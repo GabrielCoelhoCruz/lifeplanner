@@ -15,7 +15,7 @@ import { ThemeProvider } from '@/lib/theme'
 import { PomodoroProvider } from '@/lib/pomodoro'
 import { useNotificationChecker } from '@/hooks/use-notification-checker'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
-import { ShortcutsHelp } from '@/components/shortcuts-help'
+import { CommandPalette } from '@/components/command-palette'
 import { PomodoroBar } from '@/components/pomodoro-bar'
 import appCss from '@/index.css?url'
 
@@ -77,10 +77,11 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 function RootLayout({ children }: { children: ReactNode }) {
-  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(false)
   useNotificationChecker()
   useKeyboardShortcuts({
-    onShowHelp: () => setShortcutsOpen(true),
+    onCommandPalette: () => setPaletteOpen(prev => !prev),
+    onShowHelp: () => setPaletteOpen(true),
     onFocusSearch: () => {
       const el = document.getElementById('search-input') as HTMLInputElement | null
       el?.focus()
@@ -89,11 +90,11 @@ function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <Header onShowShortcuts={() => setShortcutsOpen(true)} />
+      <Header onShowShortcuts={() => setPaletteOpen(true)} />
       <main>
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
-      <ShortcutsHelp open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>
   )
 }

@@ -6,6 +6,7 @@ interface ShortcutHandlers {
   onNewProject?: () => void
   onFocusSearch?: () => void
   onShowHelp?: () => void
+  onCommandPalette?: () => void
 }
 
 export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
@@ -17,6 +18,13 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      // ⌘K / Ctrl+K — command palette (works EVERYWHERE, even in inputs)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        handlersRef.current.onCommandPalette?.()
+        return
+      }
+
       const target = e.target as HTMLElement
       if (
         target.tagName === 'INPUT' ||

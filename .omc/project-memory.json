@@ -193,6 +193,12 @@
       "type": "file"
     },
     {
+      "path": "src\\routes\\__root.tsx",
+      "accessCount": 24,
+      "lastAccessed": 1776349618976,
+      "type": "file"
+    },
+    {
       "path": "src\\routes\\projects.$projectId.tsx",
       "accessCount": 23,
       "lastAccessed": 1776344866552,
@@ -209,12 +215,6 @@
       "accessCount": 21,
       "lastAccessed": 1776344916348,
       "type": "directory"
-    },
-    {
-      "path": "src\\routes\\__root.tsx",
-      "accessCount": 21,
-      "lastAccessed": 1776349249716,
-      "type": "file"
     },
     {
       "path": "src\\server\\routes\\tasks.ts",
@@ -271,6 +271,12 @@
       "type": "file"
     },
     {
+      "path": "src\\components\\layout\\header.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1776349642181,
+      "type": "file"
+    },
+    {
       "path": "src\\server\\routes\\projects.ts",
       "accessCount": 9,
       "lastAccessed": 1776342363870,
@@ -313,6 +319,12 @@
       "type": "file"
     },
     {
+      "path": "src\\hooks\\use-keyboard-shortcuts.ts",
+      "accessCount": 8,
+      "lastAccessed": 1776349595159,
+      "type": "file"
+    },
+    {
       "path": "src\\components\\create-task-dialog.tsx",
       "accessCount": 7,
       "lastAccessed": 1776308879002,
@@ -322,12 +334,6 @@
       "path": "src\\components\\fab.tsx",
       "accessCount": 7,
       "lastAccessed": 1776310281134,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\layout\\header.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1776344885997,
       "type": "file"
     },
     {
@@ -346,12 +352,6 @@
       "path": "src\\server\\routes\\views.ts",
       "accessCount": 5,
       "lastAccessed": 1776342365290,
-      "type": "file"
-    },
-    {
-      "path": "src\\hooks\\use-keyboard-shortcuts.ts",
-      "accessCount": 5,
-      "lastAccessed": 1776344876156,
       "type": "file"
     },
     {
@@ -379,6 +379,12 @@
       "type": "file"
     },
     {
+      "path": "src\\components\\shortcuts-help.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1776349522910,
+      "type": "file"
+    },
+    {
       "path": "src\\server",
       "accessCount": 3,
       "lastAccessed": 1776307140918,
@@ -394,12 +400,6 @@
       "path": "src\\components\\quick-add-task.tsx",
       "accessCount": 3,
       "lastAccessed": 1776344885190,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\shortcuts-help.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1776344886446,
       "type": "file"
     },
     {
@@ -433,6 +433,12 @@
       "type": "file"
     },
     {
+      "path": "src\\components\\ui\\dialog.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1776349523933,
+      "type": "file"
+    },
+    {
       "path": "public",
       "accessCount": 1,
       "lastAccessed": 1776305242289,
@@ -454,12 +460,6 @@
       "path": "src\\components\\priority-badge.tsx",
       "accessCount": 1,
       "lastAccessed": 1776305589743,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\ui\\dialog.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1776307171243,
       "type": "file"
     },
     {

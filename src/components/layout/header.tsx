@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Gear, CalendarBlank, Keyboard } from '@phosphor-icons/react'
+import { Gear, CalendarBlank, MagnifyingGlass } from '@phosphor-icons/react'
 
 interface HeaderProps {
   onShowShortcuts?: () => void
@@ -24,12 +24,13 @@ export function Header({ onShowShortcuts }: HeaderProps) {
       <div className="flex items-center gap-2">
         <button
           onClick={onShowShortcuts}
-          className="hidden md:flex items-center gap-1 text-xs text-text-muted hover:text-text-secondary transition-colors"
-          title="Atalhos de teclado"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm text-text-muted hover:text-text-secondary bg-bg-secondary hover:bg-bg-secondary/80 rounded-lg border border-border transition-colors cursor-pointer"
+          title="Command palette (⌘K)"
         >
-          <Keyboard size={14} />
-          <kbd className="px-1 py-0.5 text-[10px] font-mono bg-bg-secondary rounded border border-border">
-            ?
+          <MagnifyingGlass size={14} />
+          <span className="text-xs">Buscar...</span>
+          <kbd className="ml-2 px-1.5 py-0.5 text-[10px] font-mono bg-bg-elevated rounded border border-border">
+            ⌘K
           </kbd>
         </button>
         <Link
