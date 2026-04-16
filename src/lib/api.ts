@@ -1,4 +1,29 @@
 import type { Project, NewProject, Task, NewTask, Item, NewItem } from '@/server/db/schema'
+import {
+  listProjects,
+  getProject,
+  createProject,
+  updateProject,
+  deleteProject,
+  reorderProjects,
+} from '@/server/functions/projects'
+import {
+  listTasksByProject,
+  getTask,
+  createTask,
+  updateTask,
+  deleteTask,
+  reorderTasks,
+} from '@/server/functions/tasks'
+import {
+  listItemsByTask,
+  createItem,
+  updateItem,
+  deleteItem,
+  reorderItems,
+} from '@/server/functions/items'
+import { getTodayTasks, getUpcomingTasks } from '@/server/functions/views'
+import { exportAllData, importAllData } from '@/server/functions/data'
 
 export interface TaskWithCounts extends Task {
   itemCount: number
@@ -11,55 +36,119 @@ export interface TaskWithProject {
   projectColor: string | null
 }
 
-const BASE = '/api'
-
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
-  if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: 'Request failed' }))
-    throw new Error(error.error || `API error: ${res.status}`)
-  }
-  if (res.status === 204) return undefined as T
-  return res.json()
+/** Convert null to undefined for server function compatibility */
+function nu<T>(v: T | null | undefined): T | undefined {
+  return v ?? undefined
 }
 
 export const api = {
   projects: {
-    list: () => request<Project[]>('/projects'),
-    get: (id: string) => request<Project>(`/projects/${id}`),
-    create: (data: Partial<NewProject>) => request<Project>('/projects', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: Partial<Project>) => request<Project>(`/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    delete: (id: string) => request<void>(`/projects/${id}`, { method: 'DELETE' }),
-    reorder: (items: { id: string; position: number }[]) => request<void>('/projects', { method: 'PATCH', body: JSON.stringify({ items }) }),
+    list: () => listProjects(),
+    get: (id: string) => getProject({ data: { id } }),
+    create: (data: Partial<NewProject>) =>
+      createProject({
+        data: {
+          name: data.name!,
+          description: nu(data.description),
+          color: nu(data.color),
+        },
+      }),
+    update: (id: string, data: Partial<Project>) =>
+      updateProject({
+        data: {
+          id,
+          name: data.name ?? undefined,
+          description: nu(data.description),
+          color: nu(data.color),
+          position: nu(data.position),
+        },
+      }),
+    delete: (id: string) => deleteProject({ data: { id } }),
+    reorder: (items: { id: string; position: number }[]) =>
+      reorderProjects({ data: { items } }),
   },
   tasks: {
-    listByProject: (projectId: string) => request<TaskWithCounts[]>(`/tasks?projectId=${projectId}`),
-    get: (id: string) => request<Task>(`/tasks/${id}`),
-    create: (data: Partial<NewTask>) => request<Task>('/tasks', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: Partial<Task>) => request<Task>(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    delete: (id: string) => request<void>(`/tasks/${id}`, { method: 'DELETE' }),
-    reorder: (items: { id: string; position: number; status?: string }[]) => request<void>('/tasks', { method: 'PATCH', body: JSON.stringify({ items }) }),
+    listByProject: (projectId: string) =>
+      listTasksByProject({ data: { projectId } }),
+    get: (id: string) => getTask({ data: { id } }),
+    create: (data: Partial<NewTask>) =>
+      createTask({
+        data: {
+          projectId: data.projectId!,
+          title: data.title!,
+          description: nu(data.description),
+          priority: nu(data.priority),
+          status: nu(data.status),
+          dueDate: data.dueDate
+            ? (data.dueDate as unknown as Date).toISOString()
+            : undefined,
+          recurrence: nu(data.recurrence),
+          recurrenceDays: nu(data.recurrenceDays),
+        },
+      }),
+    update: (id: string, data: Partial<Task>) =>
+      updateTask({
+        data: {
+          id,
+          title: data.title ?? undefined,
+          description: nu(data.description),
+          priority: nu(data.priority),
+          status: nu(data.status),
+          dueDate: data.dueDate
+            ? (data.dueDate as unknown as Date).toISOString()
+            : data.dueDate === null
+              ? null
+              : undefined,
+          position: nu(data.position),
+          recurrence: nu(data.recurrence),
+          recurrenceDays: nu(data.recurrenceDays),
+        },
+      }),
+    delete: (id: string) => deleteTask({ data: { id } }),
+    reorder: (items: { id: string; position: number; status?: string }[]) =>
+      reorderTasks({ data: { items } }),
   },
   items: {
-    listByTask: (taskId: string) => request<Item[]>(`/items?taskId=${taskId}`),
-    create: (data: Partial<NewItem>) => request<Item>('/items', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: Partial<Item>) => request<Item>(`/items/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    delete: (id: string) => request<void>(`/items/${id}`, { method: 'DELETE' }),
-    reorder: (items: { id: string; position: number }[]) => request<void>('/items', { method: 'PATCH', body: JSON.stringify({ items }) }),
+    listByTask: (taskId: string) => listItemsByTask({ data: { taskId } }),
+    create: (data: Partial<NewItem>) =>
+      createItem({
+        data: {
+          taskId: data.taskId!,
+          title: data.title!,
+          description: nu(data.description),
+        },
+      }),
+    update: (id: string, data: Partial<Item>) =>
+      updateItem({
+        data: {
+          id,
+          title: data.title ?? undefined,
+          description: nu(data.description),
+          isCompleted: data.isCompleted ?? undefined,
+          position: nu(data.position),
+        },
+      }),
+    delete: (id: string) => deleteItem({ data: { id } }),
+    reorder: (items: { id: string; position: number }[]) =>
+      reorderItems({ data: { items } }),
   },
   views: {
-    today: () => request<TaskWithProject[]>('/views/today'),
-    upcoming: () => request<TaskWithProject[]>('/views/upcoming'),
+    today: () => getTodayTasks(),
+    upcoming: () => getUpcomingTasks(),
   },
   data: {
-    exportAll: () => request<{ projects: Project[]; tasks: Task[]; items: Item[] }>('/data'),
-    importAll: (data: { projects: unknown[]; tasks?: unknown[]; items?: unknown[] }) =>
-      request<{ success: boolean; imported: { projects: number; tasks: number; items: number } }>(
-        '/data',
-        { method: 'POST', body: JSON.stringify(data) },
-      ),
+    exportAll: () => exportAllData(),
+    importAll: (data: {
+      projects: unknown[]
+      tasks?: unknown[]
+      items?: unknown[]
+    }) =>
+      importAllData({
+        data: {
+          projects: data.projects as Array<Record<string, unknown>>,
+          tasks: data.tasks as Array<Record<string, unknown>> | undefined,
+          items: data.items as Array<Record<string, unknown>> | undefined,
+        },
+      }),
   },
 }

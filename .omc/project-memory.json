@@ -187,6 +187,12 @@
       "type": "file"
     },
     {
+      "path": "src\\lib\\api.ts",
+      "accessCount": 23,
+      "lastAccessed": 1776342838843,
+      "type": "file"
+    },
+    {
       "path": "src\\routes\\projects.$projectId.tsx",
       "accessCount": 22,
       "lastAccessed": 1776308861704,
@@ -199,15 +205,15 @@
       "type": "file"
     },
     {
-      "path": "src\\hooks\\use-tasks.ts",
-      "accessCount": 18,
-      "lastAccessed": 1776316549311,
+      "path": "src\\server\\routes\\tasks.ts",
+      "accessCount": 20,
+      "lastAccessed": 1776342364332,
       "type": "file"
     },
     {
-      "path": "src\\lib\\api.ts",
-      "accessCount": 17,
-      "lastAccessed": 1776316548339,
+      "path": "src\\hooks\\use-tasks.ts",
+      "accessCount": 18,
+      "lastAccessed": 1776316549311,
       "type": "file"
     },
     {
@@ -223,9 +229,15 @@
       "type": "file"
     },
     {
-      "path": "src\\server\\routes\\tasks.ts",
+      "path": "src\\server\\index.ts",
       "accessCount": 14,
-      "lastAccessed": 1776316386883,
+      "lastAccessed": 1776342358574,
+      "type": "file"
+    },
+    {
+      "path": "src\\routes\\__root.tsx",
+      "accessCount": 14,
+      "lastAccessed": 1776342652426,
       "type": "file"
     },
     {
@@ -241,18 +253,6 @@
       "type": "file"
     },
     {
-      "path": "src\\server\\index.ts",
-      "accessCount": 12,
-      "lastAccessed": 1776316558035,
-      "type": "file"
-    },
-    {
-      "path": "src\\routes\\__root.tsx",
-      "accessCount": 11,
-      "lastAccessed": 1776308860564,
-      "type": "file"
-    },
-    {
       "path": "src\\components\\kanban-board.tsx",
       "accessCount": 11,
       "lastAccessed": 1776308869426,
@@ -260,8 +260,26 @@
     },
     {
       "path": "src\\server\\db\\schema.ts",
+      "accessCount": 10,
+      "lastAccessed": 1776342358359,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\routes\\items.ts",
+      "accessCount": 10,
+      "lastAccessed": 1776342364816,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\routes\\projects.ts",
       "accessCount": 9,
-      "lastAccessed": 1776316385948,
+      "lastAccessed": 1776342363870,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\routes\\data.ts",
+      "accessCount": 9,
+      "lastAccessed": 1776342365880,
       "type": "file"
     },
     {
@@ -271,15 +289,21 @@
       "type": "file"
     },
     {
-      "path": "src\\components\\create-task-dialog.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1776308879002,
+      "path": "src\\index.css",
+      "accessCount": 8,
+      "lastAccessed": 1776342358560,
       "type": "file"
     },
     {
-      "path": "src\\index.css",
+      "path": "src\\server\\db\\index.ts",
+      "accessCount": 8,
+      "lastAccessed": 1776342797590,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\create-task-dialog.tsx",
       "accessCount": 7,
-      "lastAccessed": 1776308909797,
+      "lastAccessed": 1776308879002,
       "type": "file"
     },
     {
@@ -307,24 +331,6 @@
       "type": "file"
     },
     {
-      "path": "src\\server\\db\\index.ts",
-      "accessCount": 6,
-      "lastAccessed": 1776316385393,
-      "type": "file"
-    },
-    {
-      "path": "src\\server\\routes\\projects.ts",
-      "accessCount": 6,
-      "lastAccessed": 1776316386312,
-      "type": "file"
-    },
-    {
-      "path": "src\\server\\routes\\items.ts",
-      "accessCount": 6,
-      "lastAccessed": 1776316387297,
-      "type": "file"
-    },
-    {
       "path": "src\\components\\search-bar.tsx",
       "accessCount": 5,
       "lastAccessed": 1776308904173,
@@ -337,9 +343,9 @@
       "type": "file"
     },
     {
-      "path": "src\\server\\routes\\data.ts",
+      "path": "src\\server\\routes\\views.ts",
       "accessCount": 5,
-      "lastAccessed": 1776316387386,
+      "lastAccessed": 1776342365290,
       "type": "file"
     },
     {
@@ -376,12 +382,6 @@
       "path": "src\\components\\pomodoro-bar.tsx",
       "accessCount": 3,
       "lastAccessed": 1776310250795,
-      "type": "file"
-    },
-    {
-      "path": "src\\server\\routes\\views.ts",
-      "accessCount": 3,
-      "lastAccessed": 1776316387931,
       "type": "file"
     },
     {

@@ -1,0 +1,16 @@
+{
+  "name": "LifePlanner",
+  "short_name": "Planner",
+  "description": "Organize sua vida em um só lugar",
+  "theme_color": "#FAFAF9",
+  "background_color": "#FAFAF9",
+  "display": "standalone",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
