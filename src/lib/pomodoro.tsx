@@ -44,7 +44,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
 
     // Show notification (browser-only)
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-      new Notification('LifePlanner — Pomodoro concluido!', {
+      new Notification('Taski — Pomodoro concluído!', {
         body: `Sessao de foco para "${activeTask?.title}" finalizada. Hora de uma pausa!`,
         icon: '/icons/icon.svg',
       })

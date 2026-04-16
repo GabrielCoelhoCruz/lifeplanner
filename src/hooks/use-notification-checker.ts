@@ -3,7 +3,7 @@ import { api } from '@/lib/api'
 import { getNotificationSetting, showTaskNotification } from '@/lib/notifications'
 
 const CHECK_INTERVAL = 15 * 60 * 1000 // Check every 15 minutes
-const NOTIFIED_KEY = 'lifeplanner-notified-tasks'
+const NOTIFIED_KEY = 'taski:notified-tasks'
 
 function getNotifiedTasks(): Set<string> {
   try {

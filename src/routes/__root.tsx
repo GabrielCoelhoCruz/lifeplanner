@@ -6,6 +6,7 @@ import {
   createRootRoute,
   HeadContent,
   Scripts,
+  useRouterState,
 } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
@@ -24,8 +25,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'LifePlanner' },
-      { name: 'description', content: 'Organize sua vida em um só lugar' },
+      { title: 'Taski — Suas tarefas. Seu ritmo.' },
+      { name: 'description', content: 'Suas tarefas. Seu ritmo. Seu dia organizado.' },
       { name: 'theme-color', content: '#FAFAF9' },
     ],
     links: [
@@ -78,6 +79,9 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 
 function RootLayout({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const isFullBleedRoute = pathname === '/login'
+
   useNotificationChecker()
   useKeyboardShortcuts({
     onCommandPalette: () => setPaletteOpen(prev => !prev),
@@ -87,6 +91,15 @@ function RootLayout({ children }: { children: ReactNode }) {
       el?.focus()
     },
   })
+
+  if (isFullBleedRoute) {
+    return (
+      <div className="min-h-screen bg-bg-primary">
+        <ErrorBoundary>{children}</ErrorBoundary>
+        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-bg-primary">

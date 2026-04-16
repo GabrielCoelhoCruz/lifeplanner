@@ -60,7 +60,7 @@ function DashboardPage() {
         Meus Projetos
       </h1>
       <p className="mt-2 text-base text-text-secondary">
-        Organize sua vida em um só lugar
+        Suas tarefas. Seu ritmo. Seu dia organizado.
       </p>
 
       <div className="mt-4">

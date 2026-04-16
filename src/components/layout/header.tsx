@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Gear, CalendarBlank, MagnifyingGlass } from '@phosphor-icons/react'
+import { TaskiLogo } from '@/components/taski-logo'
 
 interface HeaderProps {
   onShowShortcuts?: () => void
@@ -9,8 +10,18 @@ export function Header({ onShowShortcuts }: HeaderProps) {
   return (
     <header className="flex items-center justify-between px-5 py-4 md:px-16 bg-bg-elevated border-b border-border">
       <div className="flex items-center gap-6">
-        <Link to="/" className="text-2xl font-normal text-text-primary tracking-tight">
-          LifePlanner
+        <Link
+          to="/"
+          className="flex items-center gap-2 group"
+          aria-label="Taski — Dashboard"
+        >
+          <TaskiLogo size={22} strokeColor="var(--color-accent)" checkColor="var(--color-accent)" />
+          <span
+            className="text-xl font-semibold tracking-tight text-text-primary group-hover:text-accent transition-colors"
+            style={{ letterSpacing: '-0.03em' }}
+          >
+            Taski
+          </span>
         </Link>
         <nav className="hidden md:flex items-center gap-4">
           <Link

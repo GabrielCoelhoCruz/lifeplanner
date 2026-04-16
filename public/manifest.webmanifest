@@ -1,8 +1,8 @@
 {
-  "name": "LifePlanner",
-  "short_name": "Planner",
-  "description": "Organize sua vida em um só lugar",
-  "theme_color": "#FAFAF9",
+  "name": "Taski",
+  "short_name": "Taski",
+  "description": "Suas tarefas. Seu ritmo. Seu dia organizado.",
+  "theme_color": "#6366F1",
   "background_color": "#FAFAF9",
   "display": "standalone",
   "start_url": "/",

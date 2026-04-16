@@ -10,12 +10,12 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
 export function getNotificationSetting(): boolean {
   if (!isBrowser) return false
-  return localStorage.getItem('lifeplanner-notifications') === 'true'
+  return localStorage.getItem('taski:notifications') === 'true'
 }
 
 export function setNotificationSetting(enabled: boolean) {
   if (!isBrowser) return
-  localStorage.setItem('lifeplanner-notifications', String(enabled))
+  localStorage.setItem('taski:notifications', String(enabled))
 }
 
 export function showTaskNotification(taskTitle: string, timeInfo: string) {
@@ -23,7 +23,7 @@ export function showTaskNotification(taskTitle: string, timeInfo: string) {
   if (!getNotificationSetting()) return
   if (Notification.permission !== 'granted') return
 
-  new Notification('LifePlanner', {
+  new Notification('Taski', {
     body: `"${taskTitle}" — prazo em ${timeInfo}`,
     icon: '/icons/icon.svg',
     tag: `task-${taskTitle.slice(0, 20)}`,
