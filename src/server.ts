@@ -52,11 +52,18 @@ async function handleAuthProxy(request: Request): Promise<Response> {
     'connection',
     'content-length',
     'accept-encoding',
+    'x-forwarded-for',
+    'x-forwarded-host',
+    'x-forwarded-proto',
+    'x-real-ip',
+    'forwarded',
   ])
   const forwardedHeaders = new Headers()
   request.headers.forEach((val, key) => {
     const lower = key.toLowerCase()
     if (stripHeaders.has(lower)) return
+    // Drop all x-vercel-* headers (platform-injected routing/tracing)
+    if (lower.startsWith('x-vercel-')) return
     if (lower === 'origin' || lower === 'referer') return
     forwardedHeaders.set(key, val)
   })
