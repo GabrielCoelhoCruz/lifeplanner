@@ -4,21 +4,21 @@ import { projects } from '../db/schema'
 import { eq, and, asc } from 'drizzle-orm'
 import { requireUser } from '../auth'
 
-export const listProjects = createServerFn({ method: 'GET' })
-  .inputValidator((data: { userId: string }) => data)
-  .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+export const listProjects = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const user = await requireUser()
     return db
       .select()
       .from(projects)
       .where(eq(projects.userId, user.id))
       .orderBy(asc(projects.position))
-  })
+  },
+)
 
 export const getProject = createServerFn({ method: 'GET' })
-  .inputValidator((data: { id: string; userId: string }) => data)
+  .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     const [result] = await db
       .select()
       .from(projects)
@@ -29,15 +29,10 @@ export const getProject = createServerFn({ method: 'GET' })
 
 export const createProject = createServerFn({ method: 'POST' })
   .inputValidator(
-    (data: {
-      userId: string
-      name: string
-      description?: string
-      color?: string
-    }) => data,
+    (data: { name: string; description?: string; color?: string }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     if (!data.name?.trim()) throw new Error('Nome é obrigatório')
     const [result] = await db
       .insert(projects)
@@ -54,7 +49,6 @@ export const createProject = createServerFn({ method: 'POST' })
 export const updateProject = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
-      userId: string
       id: string
       name?: string
       description?: string
@@ -63,13 +57,11 @@ export const updateProject = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
-    const { id, userId: _u, ...fields } = data
-    void _u
+    const user = await requireUser()
+    const { id, ...fields } = data
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (fields.name !== undefined) updates.name = fields.name.trim()
-    if (fields.description !== undefined)
-      updates.description = fields.description
+    if (fields.description !== undefined) updates.description = fields.description
     if (fields.color !== undefined) updates.color = fields.color
     if (fields.position !== undefined) updates.position = fields.position
 
@@ -83,9 +75,9 @@ export const updateProject = createServerFn({ method: 'POST' })
   })
 
 export const deleteProject = createServerFn({ method: 'POST' })
-  .inputValidator((data: { id: string; userId: string }) => data)
+  .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await db
       .delete(projects)
       .where(and(eq(projects.id, data.id), eq(projects.userId, user.id)))
@@ -94,13 +86,10 @@ export const deleteProject = createServerFn({ method: 'POST' })
 
 export const reorderProjects = createServerFn({ method: 'POST' })
   .inputValidator(
-    (data: {
-      userId: string
-      items: { id: string; position: number }[]
-    }) => data,
+    (data: { items: { id: string; position: number }[] }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await Promise.all(
       data.items.map((item) =>
         db

@@ -4,10 +4,9 @@ import { projects, tasks, items } from '../db/schema'
 import { eq, inArray, asc } from 'drizzle-orm'
 import { requireUser } from '../auth'
 
-export const exportAllData = createServerFn({ method: 'GET' })
-  .inputValidator((data: { userId: string }) => data)
-  .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+export const exportAllData = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const user = await requireUser()
 
     const allProjects = await db
       .select()
@@ -36,19 +35,19 @@ export const exportAllData = createServerFn({ method: 'GET' })
         : []
 
     return { projects: allProjects, tasks: allTasks, items: allItems }
-  })
+  },
+)
 
 export const importAllData = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
-      userId: string
       projects: Array<Record<string, unknown>>
       tasks?: Array<Record<string, unknown>>
       items?: Array<Record<string, unknown>>
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     const importProjects = data.projects
     const importTasks = data.tasks
     const importItems = data.items
@@ -90,9 +89,7 @@ export const importAllData = createServerFn({ method: 'POST' })
             status: (t.status as 'todo' | 'in_progress' | 'done') || 'todo',
             dueDate:
               (t.dueDate as string) || (t.due_date as string)
-                ? new Date(
-                    (t.dueDate as string) || (t.due_date as string),
-                  )
+                ? new Date((t.dueDate as string) || (t.due_date as string))
                 : null,
             recurrence:
               (t.recurrence as

@@ -1,5 +1,4 @@
 import type { Project, NewProject, Task, NewTask, Item, NewItem } from '@/server/db/schema'
-import { authClient } from '@/lib/auth-client'
 import {
   listProjects,
   getProject,
@@ -26,17 +25,6 @@ import {
 import { getTodayTasks, getUpcomingTasks } from '@/server/functions/views'
 import { exportAllData, importAllData } from '@/server/functions/data'
 
-/**
- * Reads the current user's id from the auth client session.
- * Throws if the user is not signed in — every api call requires auth.
- */
-async function getUserId(): Promise<string> {
-  const { data } = await authClient.getSession()
-  const id = data?.user?.id
-  if (!id) throw new Error('Não autenticado')
-  return id
-}
-
 export interface TaskWithCounts extends Task {
   itemCount: number
   itemDoneCount: number
@@ -55,22 +43,19 @@ function nu<T>(v: T | null | undefined): T | undefined {
 
 export const api = {
   projects: {
-    list: async () => listProjects({ data: { userId: await getUserId() } }),
-    get: async (id: string) =>
-      getProject({ data: { id, userId: await getUserId() } }),
-    create: async (data: Partial<NewProject>) =>
+    list: () => listProjects(),
+    get: (id: string) => getProject({ data: { id } }),
+    create: (data: Partial<NewProject>) =>
       createProject({
         data: {
-          userId: await getUserId(),
           name: data.name!,
           description: nu(data.description),
           color: nu(data.color),
         },
       }),
-    update: async (id: string, data: Partial<Project>) =>
+    update: (id: string, data: Partial<Project>) =>
       updateProject({
         data: {
-          userId: await getUserId(),
           id,
           name: data.name ?? undefined,
           description: nu(data.description),
@@ -78,20 +63,17 @@ export const api = {
           position: nu(data.position),
         },
       }),
-    delete: async (id: string) =>
-      deleteProject({ data: { id, userId: await getUserId() } }),
-    reorder: async (items: { id: string; position: number }[]) =>
-      reorderProjects({ data: { items, userId: await getUserId() } }),
+    delete: (id: string) => deleteProject({ data: { id } }),
+    reorder: (items: { id: string; position: number }[]) =>
+      reorderProjects({ data: { items } }),
   },
   tasks: {
-    listByProject: async (projectId: string) =>
-      listTasksByProject({ data: { projectId, userId: await getUserId() } }),
-    get: async (id: string) =>
-      getTask({ data: { id, userId: await getUserId() } }),
-    create: async (data: Partial<NewTask>) =>
+    listByProject: (projectId: string) =>
+      listTasksByProject({ data: { projectId } }),
+    get: (id: string) => getTask({ data: { id } }),
+    create: (data: Partial<NewTask>) =>
       createTask({
         data: {
-          userId: await getUserId(),
           projectId: data.projectId!,
           title: data.title!,
           description: nu(data.description),
@@ -104,10 +86,9 @@ export const api = {
           recurrenceDays: nu(data.recurrenceDays),
         },
       }),
-    update: async (id: string, data: Partial<Task>) =>
+    update: (id: string, data: Partial<Task>) =>
       updateTask({
         data: {
-          userId: await getUserId(),
           id,
           title: data.title ?? undefined,
           description: nu(data.description),
@@ -123,27 +104,23 @@ export const api = {
           recurrenceDays: nu(data.recurrenceDays),
         },
       }),
-    delete: async (id: string) =>
-      deleteTask({ data: { id, userId: await getUserId() } }),
-    reorder: async (items: { id: string; position: number; status?: string }[]) =>
-      reorderTasks({ data: { items, userId: await getUserId() } }),
+    delete: (id: string) => deleteTask({ data: { id } }),
+    reorder: (items: { id: string; position: number; status?: string }[]) =>
+      reorderTasks({ data: { items } }),
   },
   items: {
-    listByTask: async (taskId: string) =>
-      listItemsByTask({ data: { taskId, userId: await getUserId() } }),
-    create: async (data: Partial<NewItem>) =>
+    listByTask: (taskId: string) => listItemsByTask({ data: { taskId } }),
+    create: (data: Partial<NewItem>) =>
       createItem({
         data: {
-          userId: await getUserId(),
           taskId: data.taskId!,
           title: data.title!,
           description: nu(data.description),
         },
       }),
-    update: async (id: string, data: Partial<Item>) =>
+    update: (id: string, data: Partial<Item>) =>
       updateItem({
         data: {
-          userId: await getUserId(),
           id,
           title: data.title ?? undefined,
           description: nu(data.description),
@@ -151,27 +128,23 @@ export const api = {
           position: nu(data.position),
         },
       }),
-    delete: async (id: string) =>
-      deleteItem({ data: { id, userId: await getUserId() } }),
-    reorder: async (items: { id: string; position: number }[]) =>
-      reorderItems({ data: { items, userId: await getUserId() } }),
+    delete: (id: string) => deleteItem({ data: { id } }),
+    reorder: (items: { id: string; position: number }[]) =>
+      reorderItems({ data: { items } }),
   },
   views: {
-    today: async () => getTodayTasks({ data: { userId: await getUserId() } }),
-    upcoming: async () =>
-      getUpcomingTasks({ data: { userId: await getUserId() } }),
+    today: () => getTodayTasks(),
+    upcoming: () => getUpcomingTasks(),
   },
   data: {
-    exportAll: async () =>
-      exportAllData({ data: { userId: await getUserId() } }),
-    importAll: async (data: {
+    exportAll: () => exportAllData(),
+    importAll: (data: {
       projects: unknown[]
       tasks?: unknown[]
       items?: unknown[]
     }) =>
       importAllData({
         data: {
-          userId: await getUserId(),
           projects: data.projects as Array<Record<string, unknown>>,
           tasks: data.tasks as Array<Record<string, unknown>> | undefined,
           items: data.items as Array<Record<string, unknown>> | undefined,

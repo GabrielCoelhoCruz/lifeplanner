@@ -4,10 +4,9 @@ import { tasks, projects } from '../db/schema'
 import { eq, lte, gte, and, ne, asc, desc } from 'drizzle-orm'
 import { requireUser } from '../auth'
 
-export const getTodayTasks = createServerFn({ method: 'GET' })
-  .inputValidator((data: { userId: string }) => data)
-  .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+export const getTodayTasks = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const user = await requireUser()
     const now = new Date()
     const endOfDay = new Date(now)
     endOfDay.setHours(23, 59, 59, 999)
@@ -28,12 +27,12 @@ export const getTodayTasks = createServerFn({ method: 'GET' })
         ),
       )
       .orderBy(asc(tasks.dueDate), desc(tasks.priority))
-  })
+  },
+)
 
-export const getUpcomingTasks = createServerFn({ method: 'GET' })
-  .inputValidator((data: { userId: string }) => data)
-  .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+export const getUpcomingTasks = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const user = await requireUser()
     const now = new Date()
     const startOfTomorrow = new Date(now)
     startOfTomorrow.setDate(startOfTomorrow.getDate() + 1)
@@ -60,4 +59,5 @@ export const getUpcomingTasks = createServerFn({ method: 'GET' })
         ),
       )
       .orderBy(asc(tasks.dueDate))
-  })
+  },
+)

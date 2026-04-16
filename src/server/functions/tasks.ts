@@ -55,9 +55,9 @@ async function assertTaskOwned(taskId: string, user: AuthUser): Promise<string> 
 }
 
 export const listTasksByProject = createServerFn({ method: 'GET' })
-  .inputValidator((data: { projectId: string; userId: string }) => data)
+  .inputValidator((data: { projectId: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await assertProjectOwned(data.projectId, user)
 
     const taskList = await db
@@ -96,9 +96,9 @@ export const listTasksByProject = createServerFn({ method: 'GET' })
   })
 
 export const getTask = createServerFn({ method: 'GET' })
-  .inputValidator((data: { id: string; userId: string }) => data)
+  .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     const [result] = await db
       .select({ task: tasks })
       .from(tasks)
@@ -111,7 +111,6 @@ export const getTask = createServerFn({ method: 'GET' })
 export const createTask = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
-      userId: string
       projectId: string
       title: string
       description?: string
@@ -123,7 +122,7 @@ export const createTask = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await assertProjectOwned(data.projectId, user)
     if (!data.title?.trim()) throw new Error('Título é obrigatório')
     const [result] = await db
@@ -151,7 +150,6 @@ export const createTask = createServerFn({ method: 'POST' })
 export const updateTask = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
-      userId: string
       id: string
       title?: string
       description?: string
@@ -164,15 +162,13 @@ export const updateTask = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await assertTaskOwned(data.id, user)
 
-    const { id, userId: _u, ...fields } = data
-    void _u
+    const { id, ...fields } = data
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (fields.title !== undefined) updates.title = fields.title.trim()
-    if (fields.description !== undefined)
-      updates.description = fields.description
+    if (fields.description !== undefined) updates.description = fields.description
     if (fields.priority !== undefined) updates.priority = fields.priority
     if (fields.status !== undefined) updates.status = fields.status
     if (fields.dueDate !== undefined)
@@ -216,9 +212,9 @@ export const updateTask = createServerFn({ method: 'POST' })
   })
 
 export const deleteTask = createServerFn({ method: 'POST' })
-  .inputValidator((data: { id: string; userId: string }) => data)
+  .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await assertTaskOwned(data.id, user)
     await db.delete(tasks).where(eq(tasks.id, data.id))
     return { success: true }
@@ -227,12 +223,11 @@ export const deleteTask = createServerFn({ method: 'POST' })
 export const reorderTasks = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
-      userId: string
       items: { id: string; position: number; status?: string }[]
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     if (data.items.length === 0) return { success: true }
 
     const ids = data.items.map((i) => i.id)

@@ -25,9 +25,9 @@ async function assertItemOwned(itemId: string, user: AuthUser): Promise<string> 
 }
 
 export const listItemsByTask = createServerFn({ method: 'GET' })
-  .inputValidator((data: { taskId: string; userId: string }) => data)
+  .inputValidator((data: { taskId: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await assertTaskOwned(data.taskId, user)
     return db
       .select()
@@ -38,15 +38,10 @@ export const listItemsByTask = createServerFn({ method: 'GET' })
 
 export const createItem = createServerFn({ method: 'POST' })
   .inputValidator(
-    (data: {
-      userId: string
-      taskId: string
-      title: string
-      description?: string
-    }) => data,
+    (data: { taskId: string; title: string; description?: string }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await assertTaskOwned(data.taskId, user)
     if (!data.title?.trim()) throw new Error('Título é obrigatório')
     const [result] = await db
@@ -63,7 +58,6 @@ export const createItem = createServerFn({ method: 'POST' })
 export const updateItem = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
-      userId: string
       id: string
       title?: string
       description?: string
@@ -72,17 +66,14 @@ export const updateItem = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await assertItemOwned(data.id, user)
 
-    const { id, userId: _u, ...fields } = data
-    void _u
+    const { id, ...fields } = data
     const updates: Record<string, unknown> = {}
     if (fields.title !== undefined) updates.title = fields.title.trim()
-    if (fields.description !== undefined)
-      updates.description = fields.description
-    if (fields.isCompleted !== undefined)
-      updates.isCompleted = fields.isCompleted
+    if (fields.description !== undefined) updates.description = fields.description
+    if (fields.isCompleted !== undefined) updates.isCompleted = fields.isCompleted
     if (fields.position !== undefined) updates.position = fields.position
 
     const [result] = await db
@@ -95,9 +86,9 @@ export const updateItem = createServerFn({ method: 'POST' })
   })
 
 export const deleteItem = createServerFn({ method: 'POST' })
-  .inputValidator((data: { id: string; userId: string }) => data)
+  .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     await assertItemOwned(data.id, user)
     await db.delete(items).where(eq(items.id, data.id))
     return { success: true }
@@ -105,13 +96,10 @@ export const deleteItem = createServerFn({ method: 'POST' })
 
 export const reorderItems = createServerFn({ method: 'POST' })
   .inputValidator(
-    (data: {
-      userId: string
-      items: { id: string; position: number }[]
-    }) => data,
+    (data: { items: { id: string; position: number }[] }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser(data.userId)
+    const user = await requireUser()
     if (data.items.length === 0) return { success: true }
 
     const ids = data.items.map((i) => i.id)
