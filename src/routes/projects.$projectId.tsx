@@ -35,6 +35,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { CaretLeft, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import type { Task } from '@/server/db/schema'
 
@@ -132,6 +133,7 @@ function ProjectDetailPage() {
     try {
       await api.tasks.reorder(orderItems)
     } catch {
+      toast.error('Erro ao reordenar tarefas. Tente novamente.')
       queryClient.invalidateQueries({ queryKey: taskKeys.byProject(projectId) })
     }
   }

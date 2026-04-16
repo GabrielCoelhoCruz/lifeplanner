@@ -56,7 +56,7 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'min-w-[280px] md:min-w-0 bg-bg-secondary rounded-md p-3 flex flex-col gap-2 transition-colors',
+        'min-w-[280px] md:min-w-0 bg-bg-secondary rounded-md p-3 flex flex-col gap-2 transition-colors snap-start',
         isOver && 'ring-2 ring-accent/40'
       )}
     >
@@ -179,6 +179,7 @@ export function KanbanBoard({ tasks, onTaskClick, projectId }: KanbanBoardProps)
         await api.tasks.reorder(orderItems)
         queryClient.invalidateQueries({ queryKey: taskKeys.byProject(projectId) })
       } catch {
+        toast.error('Erro ao reordenar tarefas. Tente novamente.')
         queryClient.invalidateQueries({ queryKey: taskKeys.byProject(projectId) })
       }
     } else {
@@ -226,6 +227,7 @@ export function KanbanBoard({ tasks, onTaskClick, projectId }: KanbanBoardProps)
         await api.tasks.reorder(orderItems)
         queryClient.invalidateQueries({ queryKey: taskKeys.byProject(projectId) })
       } catch {
+        toast.error('Erro ao reordenar tarefas. Tente novamente.')
         queryClient.invalidateQueries({ queryKey: taskKeys.byProject(projectId) })
       }
     }
@@ -239,7 +241,7 @@ export function KanbanBoard({ tasks, onTaskClick, projectId }: KanbanBoardProps)
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-3 md:overflow-visible">
+      <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-3 md:overflow-visible md:snap-none">
         {columns.map((col) => (
           <DroppableColumn
             key={col.key}

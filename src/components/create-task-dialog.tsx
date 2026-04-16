@@ -45,6 +45,10 @@ export function CreateTaskDialog({ projectId, open, onOpenChange }: CreateTaskDi
           setPriority('medium')
           setDueDate('')
           onOpenChange(false)
+          toast.success('Tarefa criada')
+        },
+        onError: () => {
+          toast.error('Erro ao criar tarefa. Tente novamente.')
         },
       }
     )
@@ -59,10 +63,11 @@ export function CreateTaskDialog({ projectId, open, onOpenChange }: CreateTaskDi
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+            <label htmlFor="task-title" className="text-xs font-medium text-text-muted uppercase tracking-wider">
               Título
             </label>
             <Input
+              id="task-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Finalizar relatório..."
@@ -71,10 +76,11 @@ export function CreateTaskDialog({ projectId, open, onOpenChange }: CreateTaskDi
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+            <label htmlFor="task-description" className="text-xs font-medium text-text-muted uppercase tracking-wider">
               Descrição
             </label>
             <textarea
+              id="task-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Opcional"
@@ -98,10 +104,11 @@ export function CreateTaskDialog({ projectId, open, onOpenChange }: CreateTaskDi
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+            <label htmlFor="task-due-date" className="text-xs font-medium text-text-muted uppercase tracking-wider">
               Data de entrega
             </label>
             <Input
+              id="task-due-date"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}

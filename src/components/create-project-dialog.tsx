@@ -58,10 +58,11 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+            <label htmlFor="project-name" className="text-xs font-medium text-text-muted uppercase tracking-wider">
               Nome
             </label>
             <Input
+              id="project-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Trabalho, Estudos..."
@@ -70,10 +71,11 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+            <label htmlFor="project-description" className="text-xs font-medium text-text-muted uppercase tracking-wider">
               Descrição
             </label>
             <textarea
+              id="project-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Opcional"
@@ -91,8 +93,9 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
+                  aria-label={`Cor ${c}`}
                   className={cn(
-                    'w-7 h-7 rounded-full transition-all cursor-pointer',
+                    'w-10 h-10 rounded-full transition-all cursor-pointer',
                     color === c
                       ? 'ring-2 ring-offset-2 ring-accent scale-110'
                       : 'hover:scale-110'

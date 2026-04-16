@@ -68,22 +68,42 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
 
   function handleSave() {
     if (!taskId) return
-    updateTask.mutate({
-      id: taskId,
-      data: {
-        title,
-        description,
-        priority,
-        status,
-        dueDate: dueDate ? new Date(dueDate + 'T00:00:00') : null,
+    updateTask.mutate(
+      {
+        id: taskId,
+        data: {
+          title,
+          description,
+          priority,
+          status,
+          dueDate: dueDate ? new Date(dueDate + 'T00:00:00') : null,
+        },
       },
-    })
+      {
+        onSuccess: () => {
+          toast.success('Tarefa salva')
+        },
+        onError: () => {
+          toast.error('Erro ao salvar tarefa. Tente novamente.')
+        },
+      }
+    )
     onOpenChange(false)
   }
 
   function handleAddItem() {
     if (!newItemTitle.trim() || !taskId) return
-    createItem.mutate({ taskId, title: newItemTitle.trim() })
+    createItem.mutate(
+      { taskId, title: newItemTitle.trim() },
+      {
+        onSuccess: () => {
+          toast.success('Item adicionado')
+        },
+        onError: () => {
+          toast.error('Erro ao adicionar item. Tente novamente.')
+        },
+      }
+    )
     setNewItemTitle('')
   }
 
@@ -105,6 +125,7 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
     try {
       await api.items.reorder(orderItems)
     } catch {
+      toast.error('Erro ao reordenar itens. Tente novamente.')
       queryClient.invalidateQueries({ queryKey: itemKeys.byTask(taskId) })
     }
   }
@@ -119,10 +140,11 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
 
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+              <label htmlFor="detail-title" className="text-xs font-medium text-text-muted uppercase tracking-wider">
                 Título
               </label>
               <Input
+                id="detail-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="mt-1"
@@ -130,10 +152,11 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
             </div>
 
             <div>
-              <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+              <label htmlFor="detail-description" className="text-xs font-medium text-text-muted uppercase tracking-wider">
                 Descrição
               </label>
               <textarea
+                id="detail-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
@@ -174,10 +197,11 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
             </div>
 
             <div>
-              <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+              <label htmlFor="detail-due-date" className="text-xs font-medium text-text-muted uppercase tracking-wider">
                 Data de entrega
               </label>
               <Input
+                id="detail-due-date"
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
@@ -213,8 +237,21 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
                       </div>
                       <button
                         type="button"
-                        onClick={() => deleteItem.mutate({ id: item.id, taskId: item.taskId })}
-                        className="pr-3 opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-priority-high cursor-pointer"
+                        onClick={() =>
+                          deleteItem.mutate(
+                            { id: item.id, taskId: item.taskId },
+                            {
+                              onSuccess: () => {
+                                toast.success('Item removido')
+                              },
+                              onError: () => {
+                                toast.error('Erro ao remover item. Tente novamente.')
+                              },
+                            }
+                          )
+                        }
+                        aria-label="Remover item"
+                        className="pr-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-text-muted hover:text-priority-high cursor-pointer"
                       >
                         <Trash size={14} />
                       </button>

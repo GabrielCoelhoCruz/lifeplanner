@@ -81,8 +81,10 @@ function SettingsPage() {
       a.download = `lifeplanner-backup-${new Date().toISOString().split('T')[0]}.json`
       a.click()
       URL.revokeObjectURL(url)
+      toast.success('Dados exportados')
     } catch (err) {
       console.error('Export failed:', err)
+      toast.error('Erro ao exportar. Tente novamente.')
     }
   }
 
@@ -101,9 +103,11 @@ function SettingsPage() {
       }
       // Note: tasks and items would need project ID mapping for full import.
       // This simplified version creates projects only.
+      toast.success('Dados importados com sucesso')
       window.location.reload()
     } catch (err) {
       console.error('Import failed:', err)
+      toast.error('Erro ao importar dados. Tente novamente.')
     } finally {
       setImporting(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
