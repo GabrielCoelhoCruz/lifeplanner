@@ -22,6 +22,7 @@ import { TaskRow, TaskRowOverlay } from '@/components/task-row'
 import { KanbanBoard } from '@/components/kanban-board'
 import { ViewToggle } from '@/components/view-toggle'
 import { SearchBar } from '@/components/search-bar'
+import { useDebounce } from '@/hooks/use-debounce'
 import { Fab } from '@/components/fab'
 import { CreateTaskDialog } from '@/components/create-task-dialog'
 import { TaskDetailPanel } from '@/components/task-detail-panel'
@@ -61,6 +62,7 @@ function ProjectDetailPage() {
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null)
   const [detailOpen, setDetailOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
+  const debouncedSearch = useDebounce(search, 300)
   const [activeTask, setActiveTask] = React.useState<Task | null>(null)
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
@@ -68,10 +70,10 @@ function ProjectDetailPage() {
   const currentView: View = view ?? 'list'
 
   const filteredTasks = React.useMemo(() => {
-    if (!search.trim()) return tasks
-    const query = search.toLowerCase()
+    if (!debouncedSearch.trim()) return tasks
+    const query = debouncedSearch.toLowerCase()
     return tasks.filter((t) => t.title.toLowerCase().includes(query))
-  }, [tasks, search])
+  }, [tasks, debouncedSearch])
 
   const taskIds = React.useMemo(() => filteredTasks.map((t) => t.id), [filteredTasks])
 

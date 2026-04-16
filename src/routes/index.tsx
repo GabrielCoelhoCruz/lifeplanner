@@ -4,6 +4,7 @@ import { useProjects } from '@/hooks/use-projects'
 import { useTasks } from '@/hooks/use-tasks'
 import { ProjectCard } from '@/components/project-card'
 import { SearchBar } from '@/components/search-bar'
+import { useDebounce } from '@/hooks/use-debounce'
 import { Fab } from '@/components/fab'
 import { CreateProjectDialog } from '@/components/create-project-dialog'
 import type { Project } from '@/server/db/schema'
@@ -29,18 +30,19 @@ function ProjectCardWithCounts({ project }: { project: Project }) {
 function DashboardPage() {
   const { data: projects, isLoading } = useProjects()
   const [search, setSearch] = React.useState('')
+  const debouncedSearch = useDebounce(search, 300)
   const [createOpen, setCreateOpen] = React.useState(false)
 
   const filtered = React.useMemo(() => {
     if (!projects) return []
-    if (!search.trim()) return projects
-    const q = search.toLowerCase()
+    if (!debouncedSearch.trim()) return projects
+    const q = debouncedSearch.toLowerCase()
     return projects.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         (p.description ?? '').toLowerCase().includes(q)
     )
-  }, [projects, search])
+  }, [projects, debouncedSearch])
 
   return (
     <div className="px-5 py-7 md:px-16 md:py-12">

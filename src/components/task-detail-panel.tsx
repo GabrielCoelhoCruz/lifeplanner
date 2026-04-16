@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input'
 import { PriorityBadge } from './priority-badge'
 import { StatusBadge } from './status-badge'
 import { ItemRow } from './item-row'
-import { useTask, useUpdateTask } from '@/hooks/use-tasks'
+import { useTask, useUpdateTask, useDeleteTask } from '@/hooks/use-tasks'
 import { useItems, useCreateItem, useUpdateItem, useDeleteItem, itemKeys } from '@/hooks/use-items'
 import { toInputDate } from '@/lib/date'
 import { api } from '@/lib/api'
@@ -39,6 +39,7 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
   const { data: task } = useTask(taskId ?? '')
   const { data: items = [] } = useItems(taskId ?? '')
   const updateTask = useUpdateTask()
+  const deleteTask = useDeleteTask()
   const createItem = useCreateItem()
   const updateItem = useUpdateItem()
   const deleteItem = useDeleteItem()
@@ -81,6 +82,7 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
       },
       {
         onSuccess: () => {
+          onOpenChange(false)
           toast.success('Tarefa salva')
         },
         onError: () => {
@@ -88,7 +90,24 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
         },
       }
     )
-    onOpenChange(false)
+  }
+
+  function handleDeleteTask() {
+    if (!taskId || !task) return
+    const confirmed = window.confirm('Tem certeza? Esta ação não pode ser desfeita.')
+    if (!confirmed) return
+    deleteTask.mutate(
+      { id: taskId, projectId: task.projectId },
+      {
+        onSuccess: () => {
+          onOpenChange(false)
+          toast.success('Tarefa excluída')
+        },
+        onError: () => {
+          toast.error('Erro ao excluir tarefa. Tente novamente.')
+        },
+      }
+    )
   }
 
   function handleAddItem() {
@@ -273,9 +292,19 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
             </div>
           </div>
 
-          <Button onClick={handleSave} className="w-full">
-            Salvar alterações
-          </Button>
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={handleDeleteTask}
+              className="flex items-center gap-2 text-sm text-priority-high hover:text-red-700 transition-colors"
+            >
+              <Trash size={16} />
+              Excluir tarefa
+            </button>
+            <Button onClick={handleSave} disabled={!title.trim()}>
+              Salvar
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
