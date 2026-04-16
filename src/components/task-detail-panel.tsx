@@ -24,8 +24,9 @@ import { useTask, useUpdateTask, useDeleteTask } from '@/hooks/use-tasks'
 import { useItems, useCreateItem, useUpdateItem, useDeleteItem, itemKeys } from '@/hooks/use-items'
 import { toInputDate } from '@/lib/date'
 import { api } from '@/lib/api'
-import { Plus, Trash } from '@phosphor-icons/react'
+import { Plus, Trash, ArrowsClockwise, Timer } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { usePomodoro } from '@/lib/pomodoro'
 import type { Task } from '@/server/db/schema'
 
 interface TaskDetailPanelProps {
@@ -38,6 +39,7 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
   const queryClient = useQueryClient()
   const { data: task } = useTask(taskId ?? '')
   const { data: items = [] } = useItems(taskId ?? '')
+  const { start: startPomodoro, isRunning: pomodoroRunning } = usePomodoro()
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
   const createItem = useCreateItem()
@@ -49,7 +51,16 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
   const [priority, setPriority] = React.useState<Task['priority']>('medium')
   const [status, setStatus] = React.useState<Task['status']>('todo')
   const [dueDate, setDueDate] = React.useState('')
+  const [recurrence, setRecurrence] = React.useState<string>('none')
   const [newItemTitle, setNewItemTitle] = React.useState('')
+
+  const recurrenceOptions = [
+    { value: 'none', label: 'Sem repetição' },
+    { value: 'daily', label: 'Diariamente' },
+    { value: 'weekdays', label: 'Dias úteis (Seg-Sex)' },
+    { value: 'weekly', label: 'Semanalmente' },
+    { value: 'monthly', label: 'Mensalmente' },
+  ]
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -64,6 +75,7 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
       setPriority(task.priority)
       setStatus(task.status)
       setDueDate(toInputDate(task.dueDate))
+      setRecurrence(task.recurrence || 'none')
     }
   }, [task])
 
@@ -78,6 +90,7 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
           priority,
           status,
           dueDate: dueDate ? new Date(dueDate + 'T00:00:00') : null,
+          recurrence: recurrence as Task['recurrence'],
         },
       },
       {
@@ -227,6 +240,22 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
                 className="mt-1"
               />
             </div>
+
+            <div>
+              <label className="text-xs font-medium text-text-muted uppercase tracking-wider flex items-center gap-1">
+                <ArrowsClockwise size={14} />
+                Repetição
+              </label>
+              <select
+                value={recurrence}
+                onChange={(e) => setRecurrence(e.target.value)}
+                className="mt-1 w-full rounded-md border border-border bg-bg-elevated px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                {recurrenceOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>
@@ -301,9 +330,22 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
               <Trash size={16} />
               Excluir tarefa
             </button>
-            <Button onClick={handleSave} disabled={!title.trim()}>
-              Salvar
-            </Button>
+            <div className="flex items-center gap-3">
+              {task && (
+                <button
+                  type="button"
+                  onClick={() => startPomodoro({ id: task.id, title: task.title, projectId: task.projectId })}
+                  disabled={pomodoroRunning}
+                  className="flex items-center gap-2 text-sm text-accent hover:text-accent-hover transition-colors disabled:opacity-40"
+                >
+                  <Timer size={16} />
+                  {pomodoroRunning ? 'Foco ativo' : 'Iniciar foco'}
+                </button>
+              )}
+              <Button onClick={handleSave} disabled={!title.trim()}>
+                Salvar
+              </Button>
+            </div>
           </div>
         </div>
       </SheetContent>

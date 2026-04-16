@@ -4,9 +4,11 @@ import { Toaster } from 'sonner'
 import { Header } from '@/components/layout/header'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { ThemeProvider } from '@/lib/theme'
+import { PomodoroProvider } from '@/lib/pomodoro'
 import { useNotificationChecker } from '@/hooks/use-notification-checker'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { ShortcutsHelp } from '@/components/shortcuts-help'
+import { PomodoroBar } from '@/components/pomodoro-bar'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -26,16 +28,19 @@ function RootLayout() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-bg-primary">
-        <Header onShowShortcuts={() => setShortcutsOpen(true)} />
-        <main>
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
-        </main>
-        <Toaster position="bottom-right" richColors closeButton />
-        <ShortcutsHelp open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
-      </div>
+      <PomodoroProvider>
+        <div className="min-h-screen bg-bg-primary">
+          <Header onShowShortcuts={() => setShortcutsOpen(true)} />
+          <main>
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
+          </main>
+          <PomodoroBar />
+          <Toaster position="bottom-right" richColors closeButton />
+          <ShortcutsHelp open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+        </div>
+      </PomodoroProvider>
     </ThemeProvider>
   )
 }
