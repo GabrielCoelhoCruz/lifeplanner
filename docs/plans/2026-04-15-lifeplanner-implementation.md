@@ -14,7 +14,7 @@
 - DnD: `@dnd-kit/core` + `@dnd-kit/sortable`
 - PWA: `vite-plugin-pwa` (Workbox)
 
-**Database Connection:** `postgresql://neondb_owner:npg_oQFhYq5aw9OJ@ep-calm-field-acf5xc35-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require`
+**Database Connection:** `postgresql://neondb_owner:<REDACTED>@ep-calm-field-acf5xc35-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require`
 
 **Figma Reference:** https://www.figma.com/design/41DybmivuDSRs4S76cm2H4
 
@@ -73,7 +73,7 @@ npm install -D vite-plugin-pwa
 **Step 6: Create `.env` file**
 
 ```env
-DATABASE_URL=postgresql://neondb_owner:npg_oQFhYq5aw9OJ@ep-calm-field-acf5xc35-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL=postgresql://neondb_owner:<REDACTED>@ep-calm-field-acf5xc35-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require
 ```
 
 **Step 7: Create `.gitignore`**
