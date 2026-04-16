@@ -5,6 +5,7 @@ import { useTasks, useUpdateTask } from '@/hooks/use-tasks'
 import { TaskRow } from '@/components/task-row'
 import { KanbanBoard } from '@/components/kanban-board'
 import { ViewToggle } from '@/components/view-toggle'
+import { SearchBar } from '@/components/search-bar'
 import { Fab } from '@/components/fab'
 import { CreateTaskDialog } from '@/components/create-task-dialog'
 import { TaskDetailPanel } from '@/components/task-detail-panel'
@@ -31,8 +32,15 @@ function ProjectDetailPage() {
   const [createOpen, setCreateOpen] = React.useState(false)
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null)
   const [detailOpen, setDetailOpen] = React.useState(false)
+  const [search, setSearch] = React.useState('')
 
   const currentView: View = view ?? 'list'
+
+  const filteredTasks = React.useMemo(() => {
+    if (!search.trim()) return tasks
+    const query = search.toLowerCase()
+    return tasks.filter((t) => t.title.toLowerCase().includes(query))
+  }, [tasks, search])
 
   function setView(v: View) {
     navigate({
@@ -103,7 +111,17 @@ function ProjectDetailPage() {
         </p>
       )}
 
-      <div className="mt-8">
+      {tasks.length > 0 && (
+        <div className="mt-6">
+          <SearchBar
+            value={search}
+            onChange={setSearch}
+            placeholder="Buscar tarefas..."
+          />
+        </div>
+      )}
+
+      <div className="mt-6">
         {tasksLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -116,9 +134,15 @@ function ProjectDetailPage() {
               Nenhuma tarefa ainda. Crie a primeira!
             </p>
           </div>
+        ) : filteredTasks.length === 0 ? (
+          <div className="mt-8 text-center">
+            <p className="text-text-muted">
+              Nenhuma tarefa encontrada.
+            </p>
+          </div>
         ) : currentView === 'list' ? (
           <div className="border border-border rounded-lg overflow-hidden bg-bg-elevated">
-            {tasks.map((task) => (
+            {filteredTasks.map((task) => (
               <TaskRow
                 key={task.id}
                 task={task}
@@ -128,7 +152,7 @@ function ProjectDetailPage() {
             ))}
           </div>
         ) : (
-          <KanbanBoard tasks={tasks} onTaskClick={handleTaskClick} />
+          <KanbanBoard tasks={filteredTasks} onTaskClick={handleTaskClick} />
         )}
       </div>
 
