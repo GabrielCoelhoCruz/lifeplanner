@@ -25,7 +25,16 @@ import { SearchBar } from '@/components/search-bar'
 import { Fab } from '@/components/fab'
 import { CreateTaskDialog } from '@/components/create-task-dialog'
 import { TaskDetailPanel } from '@/components/task-detail-panel'
-import { CaretLeft } from '@phosphor-icons/react'
+import { EditProjectDialog } from '@/components/edit-project-dialog'
+import { DeleteProjectDialog } from '@/components/delete-project-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
+import { CaretLeft, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react'
 import { api } from '@/lib/api'
 import type { Task } from '@/server/db/schema'
 
@@ -52,6 +61,8 @@ function ProjectDetailPage() {
   const [detailOpen, setDetailOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
   const [activeTask, setActiveTask] = React.useState<Task | null>(null)
+  const [editOpen, setEditOpen] = React.useState(false)
+  const [deleteOpen, setDeleteOpen] = React.useState(false)
 
   const currentView: View = view ?? 'list'
 
@@ -161,9 +172,33 @@ function ProjectDetailPage() {
       </Link>
 
       <div className="mt-6 flex items-center justify-between gap-4">
-        <h1 className="text-3xl md:text-4xl font-normal text-text-primary tracking-tight truncate">
-          {project.name}
-        </h1>
+        <div className="flex items-center gap-2 min-w-0">
+          <h1 className="text-3xl md:text-4xl font-normal text-text-primary tracking-tight truncate">
+            {project.name}
+          </h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-secondary transition-colors flex-shrink-0"
+              aria-label="Opções do projeto"
+            >
+              <DotsThree size={22} weight="bold" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                <PencilSimple size={16} />
+                Editar projeto
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setDeleteOpen(true)}
+                className="text-priority-high"
+              >
+                <Trash size={16} />
+                Excluir projeto
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <ViewToggle value={currentView} onChange={setView} />
       </div>
 
@@ -245,6 +280,17 @@ function ProjectDetailPage() {
         taskId={selectedTaskId}
         open={detailOpen}
         onOpenChange={setDetailOpen}
+      />
+      <EditProjectDialog
+        project={project}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+      <DeleteProjectDialog
+        projectId={project.id}
+        projectName={project.name}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
       />
     </div>
   )
