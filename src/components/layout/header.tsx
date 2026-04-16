@@ -9,8 +9,8 @@ interface HeaderProps {
 
 export function Header({ onShowShortcuts }: HeaderProps) {
   return (
-    <header className="flex items-center justify-between px-5 py-4 md:px-16 bg-bg-elevated border-b border-border">
-      <div className="flex items-center gap-6">
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 py-4 md:px-16 bg-bg-elevated border-b border-border">
+      <div className="flex items-center gap-6 justify-self-start">
         <Link
           to="/"
           className="flex items-center gap-2 group"
@@ -33,18 +33,18 @@ export function Header({ onShowShortcuts }: HeaderProps) {
           </Link>
         </nav>
       </div>
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onShowShortcuts}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm text-text-muted hover:text-text-secondary bg-bg-secondary hover:bg-bg-secondary/80 rounded-lg border border-border transition-colors cursor-pointer"
-          title="Command palette (⌘K)"
-        >
-          <MagnifyingGlass size={14} />
-          <span className="text-xs">Buscar...</span>
-          <kbd className="ml-2 px-1.5 py-0.5 text-[10px] font-mono bg-bg-elevated rounded border border-border">
-            ⌘K
-          </kbd>
-        </button>
+      <button
+        onClick={onShowShortcuts}
+        className="hidden md:flex items-center gap-3 w-full max-w-xl px-4 py-2.5 text-sm text-text-muted hover:text-text-secondary bg-bg-secondary hover:bg-bg-secondary/80 rounded-lg border border-border transition-colors cursor-pointer justify-self-center"
+        title="Command palette (⌘K)"
+      >
+        <MagnifyingGlass size={16} />
+        <span className="text-sm">Buscar...</span>
+        <kbd className="ml-auto px-2 py-0.5 text-[11px] font-mono bg-bg-elevated rounded border border-border">
+          ⌘K
+        </kbd>
+      </button>
+      <div className="flex items-center gap-2 justify-self-end">
         <Link
           to="/today"
           className="md:hidden p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-secondary transition-colors"

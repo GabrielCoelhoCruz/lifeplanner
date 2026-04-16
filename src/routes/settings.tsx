@@ -131,7 +131,7 @@ function SettingsPage() {
   }
 
   return (
-    <div className="px-5 py-7 md:px-16 md:py-12 max-w-2xl animate-fade-in-up">
+    <div className="max-w-2xl mx-auto px-5 py-7 md:px-16 md:py-12 animate-fade-in-up">
       <Link
         to="/"
         className="inline-flex items-center gap-1 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"

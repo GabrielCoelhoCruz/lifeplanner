@@ -55,7 +55,7 @@ function DashboardPage() {
   }, [projects, debouncedSearch])
 
   return (
-    <div className="px-5 py-7 md:px-16 md:py-12 animate-fade-in-up">
+    <div className="max-w-7xl mx-auto px-5 py-7 md:px-16 md:py-12 animate-fade-in-up">
       <h1 className="text-4xl md:text-5xl font-normal text-text-primary tracking-tight">
         Meus Projetos
       </h1>

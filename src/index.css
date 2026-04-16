@@ -103,19 +103,19 @@
 /* ── Animation utility classes ── */
 
 .animate-fade-in {
-  animation: fade-in 0.3s var(--ease-out) both;
+  animation: fade-in 0.3s var(--ease-out) backwards;
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.4s var(--ease-out) both;
+  animation: fade-in-up 0.4s var(--ease-out) backwards;
 }
 
 .animate-scale-in {
-  animation: scale-in 0.3s var(--ease-out) both;
+  animation: scale-in 0.3s var(--ease-out) backwards;
 }
 
 .animate-slide-in-right {
-  animation: slide-in-right 0.3s var(--ease-out) both;
+  animation: slide-in-right 0.3s var(--ease-out) backwards;
 }
 
 .animate-check-pop {
@@ -124,7 +124,7 @@
 
 /* Stagger children — add animate-stagger to parent, animate-fade-in-up to children */
 .animate-stagger > * {
-  animation: fade-in-up 0.4s var(--ease-out) both;
+  animation: fade-in-up 0.4s var(--ease-out) backwards;
 }
 .animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
 .animate-stagger > *:nth-child(2) { animation-delay: 50ms; }
