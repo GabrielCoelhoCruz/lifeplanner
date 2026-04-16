@@ -1,5 +1,10 @@
 import type { Project, NewProject, Task, NewTask, Item, NewItem } from '@/server/db/schema'
 
+export interface TaskWithCounts extends Task {
+  itemCount: number
+  itemDoneCount: number
+}
+
 export interface TaskWithProject {
   task: Task
   projectName: string | null
@@ -31,7 +36,7 @@ export const api = {
     reorder: (items: { id: string; position: number }[]) => request<void>('/projects/reorder/batch', { method: 'PATCH', body: JSON.stringify({ items }) }),
   },
   tasks: {
-    listByProject: (projectId: string) => request<Task[]>(`/tasks/project/${projectId}`),
+    listByProject: (projectId: string) => request<TaskWithCounts[]>(`/tasks/project/${projectId}`),
     get: (id: string) => request<Task>(`/tasks/${id}`),
     create: (data: Partial<NewTask>) => request<Task>('/tasks', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: string, data: Partial<Task>) => request<Task>(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),

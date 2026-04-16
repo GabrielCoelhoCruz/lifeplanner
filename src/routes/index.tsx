@@ -49,7 +49,7 @@ function DashboardPage() {
   }, [projects, debouncedSearch])
 
   return (
-    <div className="px-5 py-7 md:px-16 md:py-12">
+    <div className="px-5 py-7 md:px-16 md:py-12 animate-fade-in-up">
       <h1 className="text-4xl md:text-5xl font-normal text-text-primary tracking-tight">
         Meus Projetos
       </h1>
@@ -107,7 +107,7 @@ function DashboardPage() {
         </div>
       ) : (
         <div
-          className="mt-8 grid gap-4"
+          className="mt-8 grid gap-4 animate-stagger"
           style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
         >
           {filtered.map((project) => (

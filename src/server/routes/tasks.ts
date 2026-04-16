@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { db } from '../db'
-import { tasks } from '../db/schema'
-import { eq, asc } from 'drizzle-orm'
+import { tasks, items } from '../db/schema'
+import { eq, asc, sql, inArray, count } from 'drizzle-orm'
 
 export const tasksRouter = Router()
 
@@ -14,8 +14,32 @@ tasksRouter.get('/project/:projectId', async (req, res) => {
     if (!UUID_REGEX.test(req.params.projectId)) {
       return res.status(400).json({ error: 'ID inválido' })
     }
-    const result = await db.select().from(tasks).where(eq(tasks.projectId, req.params.projectId)).orderBy(asc(tasks.position))
-    res.json(result)
+    const taskList = await db.select().from(tasks).where(eq(tasks.projectId, req.params.projectId)).orderBy(asc(tasks.position))
+
+    const taskIds = taskList.map(t => t.id)
+    if (taskIds.length > 0) {
+      const counts = await db
+        .select({
+          taskId: items.taskId,
+          total: count(),
+          done: count(sql`CASE WHEN ${items.isCompleted} = true THEN 1 END`),
+        })
+        .from(items)
+        .where(inArray(items.taskId, taskIds))
+        .groupBy(items.taskId)
+
+      const countMap = new Map(
+        counts.map(c => [c.taskId, { total: Number(c.total), done: Number(c.done) }])
+      )
+
+      return res.json(taskList.map(t => ({
+        ...t,
+        itemCount: countMap.get(t.id)?.total ?? 0,
+        itemDoneCount: countMap.get(t.id)?.done ?? 0,
+      })))
+    }
+
+    res.json(taskList.map(t => ({ ...t, itemCount: 0, itemDoneCount: 0 })))
   } catch (error) {
     console.error('Error fetching tasks:', error)
     res.status(500).json({ error: 'Internal server error' })

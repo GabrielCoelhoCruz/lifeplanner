@@ -3,13 +3,16 @@ import { Circle, CheckCircle, DotsSixVertical } from '@phosphor-icons/react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Task } from '@/server/db/schema'
+import type { TaskWithCounts } from '@/lib/api'
 import { formatDatePt, isOverdue } from '@/lib/date'
 import { cn } from '@/lib/utils'
 
+type TaskMaybeWithCounts = Task & Partial<Pick<TaskWithCounts, 'itemCount' | 'itemDoneCount'>>
+
 interface TaskRowProps {
-  task: Task
-  onToggle: (task: Task) => void
-  onClick: (task: Task) => void
+  task: TaskMaybeWithCounts
+  onToggle: (task: TaskMaybeWithCounts) => void
+  onClick: (task: TaskMaybeWithCounts) => void
   sortable?: boolean
 }
 
@@ -69,7 +72,7 @@ export function TaskRow({ task, onToggle, onClick, sortable = false }: TaskRowPr
         className="shrink-0 cursor-pointer"
       >
         {isDone ? (
-          <CheckCircle size={20} weight="fill" className="text-status-done" />
+          <CheckCircle size={20} weight="fill" className="text-status-done animate-check-pop" />
         ) : (
           <Circle size={20} className="text-text-muted" />
         )}
@@ -83,6 +86,20 @@ export function TaskRow({ task, onToggle, onClick, sortable = false }: TaskRowPr
       >
         {task.title}
       </span>
+
+      {(task.itemCount ?? 0) > 0 && (
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div className="w-16 h-1.5 bg-bg-secondary rounded-full overflow-hidden">
+            <div
+              className="h-full bg-status-done rounded-full transition-all duration-300"
+              style={{ width: `${((task.itemDoneCount ?? 0) / task.itemCount!) * 100}%` }}
+            />
+          </div>
+          <span className="text-xs font-mono text-text-muted">
+            {task.itemDoneCount ?? 0}/{task.itemCount}
+          </span>
+        </div>
+      )}
 
       <span className={cn('w-2 h-2 rounded-full shrink-0', priorityColors[task.priority])} />
 

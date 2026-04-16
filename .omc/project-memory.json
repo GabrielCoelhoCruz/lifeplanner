@@ -1,0 +1,455 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1776305112816,
+  "projectRoot": "C:\\Users\\Loira\\Desktop\\planner",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "express",
+        "version": "5.2.1",
+        "category": "backend"
+      },
+      {
+        "name": "react",
+        "version": "19.2.4",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.4",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "8.0.4",
+        "category": "build"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
+      "dev:client": "vite",
+      "dev:api": "tsx watch src/server/index.ts",
+      "build": "tsc -b && vite build",
+      "lint": "eslint .",
+      "preview": "vite preview",
+      "db:push": "drizzle-kit push",
+      "db:studio": "drizzle-kit studio"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "public",
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 7,
+      "lastAccessed": 1776305112771,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg",
+        "index.html",
+        "manifest.webmanifest",
+        "registerSW.js"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 0,
+      "lastAccessed": 1776305112773,
+      "keyFiles": []
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 2,
+      "lastAccessed": 1776305112784,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 4,
+      "lastAccessed": 1776305112784,
+      "keyFiles": [
+        "App.tsx",
+        "index.css",
+        "main.tsx",
+        "routeTree.gen.ts"
+      ]
+    },
+    "dist\\assets": {
+      "path": "dist\\assets",
+      "purpose": "Static assets",
+      "fileCount": 2,
+      "lastAccessed": 1776305112785,
+      "keyFiles": [
+        "index-BY-Teh2X.css",
+        "index-DuuAgww9.js"
+      ]
+    },
+    "src\\assets": {
+      "path": "src\\assets",
+      "purpose": "Static assets",
+      "fileCount": 0,
+      "lastAccessed": 1776305112785,
+      "keyFiles": []
+    },
+    "src\\components": {
+      "path": "src\\components",
+      "purpose": "UI components",
+      "fileCount": 16,
+      "lastAccessed": 1776305112786,
+      "keyFiles": [
+        "create-project-dialog.tsx",
+        "create-task-dialog.tsx",
+        "delete-project-dialog.tsx"
+      ]
+    },
+    "src\\lib": {
+      "path": "src\\lib",
+      "purpose": "Library code",
+      "fileCount": 5,
+      "lastAccessed": 1776305112786,
+      "keyFiles": [
+        "api.ts",
+        "date.ts",
+        "notifications.ts"
+      ]
+    },
+    "src\\routes": {
+      "path": "src\\routes",
+      "purpose": "Route handlers",
+      "fileCount": 4,
+      "lastAccessed": 1776305112786,
+      "keyFiles": [
+        "index.tsx",
+        "projects.$projectId.tsx",
+        "settings.tsx"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src\\routes\\projects.$projectId.tsx",
+      "accessCount": 21,
+      "lastAccessed": 1776307579683,
+      "type": "file"
+    },
+    {
+      "path": "src\\routes\\index.tsx",
+      "accessCount": 17,
+      "lastAccessed": 1776307537097,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 14,
+      "lastAccessed": 1776307475079,
+      "type": "directory"
+    },
+    {
+      "path": "src\\routes\\settings.tsx",
+      "accessCount": 13,
+      "lastAccessed": 1776307571477,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\api.ts",
+      "accessCount": 12,
+      "lastAccessed": 1776307184026,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 11,
+      "lastAccessed": 1776307486494,
+      "type": "directory"
+    },
+    {
+      "path": "src\\server\\index.ts",
+      "accessCount": 10,
+      "lastAccessed": 1776305636021,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\kanban-board.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1776307290575,
+      "type": "file"
+    },
+    {
+      "path": "src\\routes\\__root.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1776307207807,
+      "type": "file"
+    },
+    {
+      "path": "src\\hooks\\use-tasks.ts",
+      "accessCount": 7,
+      "lastAccessed": 1776307303900,
+      "type": "file"
+    },
+    {
+      "path": "src\\routes\\today.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1776307565956,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\task-row.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1776307585452,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\task-detail-panel.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1776305624129,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\routes\\tasks.ts",
+      "accessCount": 6,
+      "lastAccessed": 1776307166842,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\kanban-card.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1776307600787,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\layout\\header.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1776307217921,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\routes\\projects.ts",
+      "accessCount": 4,
+      "lastAccessed": 1776305527562,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\db\\index.ts",
+      "accessCount": 4,
+      "lastAccessed": 1776307117441,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\db\\schema.ts",
+      "accessCount": 4,
+      "lastAccessed": 1776307118224,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\routes\\items.ts",
+      "accessCount": 4,
+      "lastAccessed": 1776307133249,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\search-bar.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1776307200160,
+      "type": "file"
+    },
+    {
+      "path": "src\\index.css",
+      "accessCount": 4,
+      "lastAccessed": 1776307507849,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\notifications.ts",
+      "accessCount": 3,
+      "lastAccessed": 1776305574749,
+      "type": "file"
+    },
+    {
+      "path": "src\\server",
+      "accessCount": 3,
+      "lastAccessed": 1776307140918,
+      "type": "directory"
+    },
+    {
+      "path": "src\\components\\fab.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1776307593296,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\date.ts",
+      "accessCount": 2,
+      "lastAccessed": 1776305590008,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\project-card.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1776307474069,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\ui\\sheet.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1776307606683,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\item-row.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776305204393,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\create-project-dialog.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776305206507,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\create-task-dialog.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776305206528,
+      "type": "file"
+    },
+    {
+      "path": "public",
+      "accessCount": 1,
+      "lastAccessed": 1776305242289,
+      "type": "directory"
+    },
+    {
+      "path": "src\\server\\routes",
+      "accessCount": 1,
+      "lastAccessed": 1776305243899,
+      "type": "directory"
+    },
+    {
+      "path": "src\\server\\routes\\data.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776305555863,
+      "type": "file"
+    },
+    {
+      "path": "src\\hooks\\use-notification-checker.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776305570988,
+      "type": "file"
+    },
+    {
+      "path": "src\\routeTree.gen.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776305588833,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\priority-badge.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776305589743,
+      "type": "file"
+    },
+    {
+      "path": "src\\server\\routes\\views.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776305612341,
+      "type": "file"
+    },
+    {
+      "path": "src\\hooks\\use-debounce.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776305633453,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\quick-add-task.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776307106123,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\ui\\dialog.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776307171243,
+      "type": "file"
+    },
+    {
+      "path": "src\\hooks\\use-keyboard-shortcuts.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776307185291,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\shortcuts-help.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776307192633,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\ui\\button.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776307447679,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\illustrations.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776307464642,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\empty-state.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776307467709,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

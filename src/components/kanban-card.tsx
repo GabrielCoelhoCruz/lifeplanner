@@ -2,12 +2,15 @@ import * as React from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Task } from '@/server/db/schema'
+import type { TaskWithCounts } from '@/lib/api'
 import { formatDatePt } from '@/lib/date'
 import { cn } from '@/lib/utils'
 
+type TaskMaybeWithCounts = Task & Partial<Pick<TaskWithCounts, 'itemCount' | 'itemDoneCount'>>
+
 interface KanbanCardProps {
-  task: Task
-  onClick: (task: Task) => void
+  task: TaskMaybeWithCounts
+  onClick: (task: TaskMaybeWithCounts) => void
 }
 
 const priorityColors: Record<string, string> = {
@@ -38,7 +41,7 @@ export function KanbanCard({ task, onClick }: KanbanCardProps) {
       style={style}
       type="button"
       onClick={() => onClick(task)}
-      className="w-full text-left bg-bg-elevated rounded-md border border-border p-3 hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing touch-none"
+      className="w-full text-left bg-bg-elevated rounded-md border border-border p-3 hover:shadow-md transition-all duration-200 cursor-grab active:cursor-grabbing touch-none"
       {...attributes}
       {...listeners}
     >
@@ -53,6 +56,19 @@ export function KanbanCard({ task, onClick }: KanbanCardProps) {
           </span>
         )}
       </div>
+      {(task.itemCount ?? 0) > 0 && (
+        <div className="mt-2 flex items-center gap-1.5">
+          <div className="flex-1 h-1 bg-bg-secondary rounded-full overflow-hidden">
+            <div
+              className="h-full bg-status-done rounded-full"
+              style={{ width: `${((task.itemDoneCount ?? 0) / task.itemCount!) * 100}%` }}
+            />
+          </div>
+          <span className="text-xs font-mono text-text-muted">
+            {task.itemDoneCount ?? 0}/{task.itemCount}
+          </span>
+        </div>
+      )}
     </button>
   )
 }

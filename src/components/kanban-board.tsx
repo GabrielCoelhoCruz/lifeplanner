@@ -18,6 +18,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import type { Task } from '@/server/db/schema'
+import type { TaskWithCounts } from '@/lib/api'
 import { KanbanCard, KanbanCardOverlay } from './kanban-card'
 import { QuickAddTask } from './quick-add-task'
 import { taskKeys } from '@/hooks/use-tasks'
@@ -25,9 +26,11 @@ import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
+type TaskMaybeWithCounts = Task & Partial<Pick<TaskWithCounts, 'itemCount' | 'itemDoneCount'>>
+
 interface KanbanBoardProps {
-  tasks: Task[]
-  onTaskClick: (task: Task) => void
+  tasks: TaskMaybeWithCounts[]
+  onTaskClick: (task: TaskMaybeWithCounts) => void
   projectId: string
 }
 
@@ -48,8 +51,8 @@ function DroppableColumn({
 }: {
   id: string
   col: (typeof columns)[number]
-  tasks: Task[]
-  onTaskClick: (task: Task) => void
+  tasks: TaskMaybeWithCounts[]
+  onTaskClick: (task: TaskMaybeWithCounts) => void
   projectId?: string
 }) {
   const { setNodeRef, isOver } = useDroppable({ id })
@@ -86,8 +89,8 @@ function DroppableColumn({
 
 export function KanbanBoard({ tasks, onTaskClick, projectId }: KanbanBoardProps) {
   const queryClient = useQueryClient()
-  const [activeTask, setActiveTask] = React.useState<Task | null>(null)
-  const [localTasks, setLocalTasks] = React.useState<Task[]>(tasks)
+  const [activeTask, setActiveTask] = React.useState<TaskMaybeWithCounts | null>(null)
+  const [localTasks, setLocalTasks] = React.useState<TaskMaybeWithCounts[]>(tasks)
 
   // Keep local copy in sync with server data
   React.useEffect(() => {
@@ -99,7 +102,7 @@ export function KanbanBoard({ tasks, onTaskClick, projectId }: KanbanBoardProps)
   )
 
   const tasksByColumn = React.useMemo(() => {
-    const map: Record<ColumnKey, Task[]> = { todo: [], in_progress: [], done: [] }
+    const map: Record<ColumnKey, TaskMaybeWithCounts[]> = { todo: [], in_progress: [], done: [] }
     for (const t of localTasks) {
       const col = map[t.status as ColumnKey]
       if (col) col.push(t)

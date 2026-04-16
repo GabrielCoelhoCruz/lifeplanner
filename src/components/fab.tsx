@@ -18,8 +18,10 @@ export function Fab({ onClick, className }: FabProps) {
         'flex items-center justify-center',
         'shadow-lg hover:scale-110 hover:bg-accent-hover',
         'transition-all duration-200 cursor-pointer',
+        'animate-scale-in',
         className
       )}
+      style={{ animationDelay: '300ms' }}
     >
       <Plus size={24} weight="bold" />
     </button>

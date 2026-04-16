@@ -46,7 +46,7 @@ function SheetOverlay({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
   const { onOpenChange } = React.useContext(SheetContext)
   return (
     <div
-      className={cn("fixed inset-0 z-50 bg-text-primary/60 backdrop-blur-sm", className)}
+      className={cn("fixed inset-0 z-50 bg-text-primary/60 backdrop-blur-sm animate-fade-in", className)}
       onClick={() => onOpenChange(false)}
       {...props}
     />
