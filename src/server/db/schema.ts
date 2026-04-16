@@ -7,7 +7,7 @@ export const projects = pgTable('projects', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull(),
   description: text('description').default(''),
-  color: text('color').default('#E11D48'),
+  color: text('color').default('#6366F1'),
   position: integer('position').default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

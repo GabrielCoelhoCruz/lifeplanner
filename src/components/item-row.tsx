@@ -52,11 +52,13 @@ export function ItemRow({ item, onToggle, sortable = false }: ItemRowProps) {
         </button>
       )}
 
-      {item.isCompleted ? (
-        <CheckSquare size={16} weight="fill" className="text-status-done shrink-0" />
-      ) : (
-        <Square size={16} className="text-text-muted shrink-0" />
-      )}
+      <span role="checkbox" aria-checked={item.isCompleted} aria-label={item.isCompleted ? 'Desmarcar item' : 'Marcar item'}>
+        {item.isCompleted ? (
+          <CheckSquare size={16} weight="fill" className="text-status-done shrink-0" />
+        ) : (
+          <Square size={16} className="text-text-muted shrink-0" />
+        )}
+      </span>
       <span
         className={cn(
           'text-sm',

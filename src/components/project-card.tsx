@@ -18,7 +18,7 @@ export function ProjectCard({ project, pendingCount, doneCount }: ProjectCardPro
     >
       <div
         className="h-[3px] w-full"
-        style={{ backgroundColor: project.color ?? '#E11D48' }}
+        style={{ backgroundColor: project.color ?? '#6366F1' }}
       />
       <div className="p-5">
         <h3 className="text-xl font-normal text-text-primary truncate">

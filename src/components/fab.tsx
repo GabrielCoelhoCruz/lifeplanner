@@ -11,6 +11,7 @@ export function Fab({ onClick, className }: FabProps) {
     <button
       type="button"
       onClick={onClick}
+      aria-label="Criar novo"
       className={cn(
         'fixed bottom-5 right-5 md:bottom-8 md:right-8 z-40',
         'w-14 h-14 rounded-full bg-accent text-white',

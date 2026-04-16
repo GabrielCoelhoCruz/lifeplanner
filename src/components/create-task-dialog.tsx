@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PriorityBadge } from './priority-badge'
 import { useCreateTask } from '@/hooks/use-tasks'
+import { toast } from 'sonner'
 import type { Task } from '@/server/db/schema'
 
 interface CreateTaskDialogProps {

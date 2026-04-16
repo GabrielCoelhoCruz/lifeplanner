@@ -65,6 +65,7 @@ export function TaskRow({ task, onToggle, onClick, sortable = false }: TaskRowPr
           e.stopPropagation()
           onToggle(task)
         }}
+        aria-label={isDone ? 'Reabrir tarefa' : 'Marcar como concluída'}
         className="shrink-0 cursor-pointer"
       >
         {isDone ? (

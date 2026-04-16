@@ -22,6 +22,7 @@ import { KanbanCard, KanbanCardOverlay } from './kanban-card'
 import { taskKeys } from '@/hooks/use-tasks'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface KanbanBoardProps {
   tasks: Task[]

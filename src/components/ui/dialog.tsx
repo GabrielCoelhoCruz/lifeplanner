@@ -51,7 +51,7 @@ function DialogOverlay({ className, ...props }: React.HTMLAttributes<HTMLDivElem
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in-0",
+        "fixed inset-0 z-50 bg-text-primary/60 backdrop-blur-sm animate-in fade-in-0",
         className
       )}
       onClick={() => onOpenChange(false)}

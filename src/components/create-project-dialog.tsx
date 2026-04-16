@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useCreateProject } from '@/hooks/use-projects'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface CreateProjectDialogProps {
   open: boolean
@@ -18,8 +19,8 @@ interface CreateProjectDialogProps {
 }
 
 const PRESET_COLORS = [
-  '#E11D48', '#DC2626', '#F59E0B', '#10B981',
-  '#3B82F6', '#8B5CF6', '#EC4899', '#6B7280',
+  '#6366F1', '#0EA5E9', '#14B8A6', '#F59E0B',
+  '#EC4899', '#8B5CF6', '#EF4444', '#84CC16',
 ]
 
 export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
@@ -39,6 +40,10 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
           setDescription('')
           setColor(PRESET_COLORS[0])
           onOpenChange(false)
+          toast.success('Projeto criado')
+        },
+        onError: () => {
+          toast.error('Erro ao criar projeto. Tente novamente.')
         },
       }
     )
