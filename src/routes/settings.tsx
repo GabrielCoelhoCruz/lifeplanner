@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { CaretLeft, Bell, SpeakerHigh, Sun, Moon, Export, Upload } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTheme } from '@/lib/theme'
 import { api } from '@/lib/api'
 import { requestNotificationPermission, setNotificationSetting } from '@/lib/notifications'
-import type { Project, Task, Item } from '@/server/db/schema'
+import { checkAndNotify } from '@/hooks/use-notification-checker'
 
 export const Route = createFileRoute('/settings')({
   component: SettingsPage,
@@ -58,6 +59,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 
 function SettingsPage() {
   const { theme, toggleTheme } = useTheme()
+  const queryClient = useQueryClient()
   const [notifications, toggleNotifications] = useLocalToggle('settings:notifications', true)
   const [sounds, toggleSounds] = useLocalToggle('settings:sounds', true)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -66,10 +68,20 @@ function SettingsPage() {
     const willEnable = !notifications
     if (willEnable) {
       const granted = await requestNotificationPermission()
-      if (!granted) return
+      if (!granted) {
+        toast.error('Permissão de notificações negada pelo navegador.')
+        return
+      }
+      setNotificationSetting(true)
+      toggleNotifications()
+      toast.success('Notificações ativadas! Você será avisado sobre tarefas próximas do prazo.')
+      // Run an immediate check so the user sees it working right away
+      checkAndNotify()
+    } else {
+      setNotificationSetting(false)
+      toggleNotifications()
+      toast.info('Notificações desativadas.')
     }
-    setNotificationSetting(willEnable)
-    toggleNotifications()
   }
   const [importing, setImporting] = React.useState(false)
 

@@ -14,12 +14,14 @@ export function setNotificationSetting(enabled: boolean) {
   localStorage.setItem('lifeplanner-notifications', String(enabled))
 }
 
-export function showTaskNotification(taskTitle: string, dueDate: string) {
+export function showTaskNotification(taskTitle: string, timeInfo: string) {
   if (!getNotificationSetting()) return
   if (Notification.permission !== 'granted') return
-  new Notification('LifePlanner - Prazo próximo', {
-    body: `"${taskTitle}" vence em ${dueDate}`,
-    icon: '/icons/icon-192.png',
-    tag: `task-${taskTitle}`,
+
+  new Notification('LifePlanner', {
+    body: `"${taskTitle}" — prazo em ${timeInfo}`,
+    icon: '/icons/icon.svg',
+    tag: `task-reminder`,
+    requireInteraction: false,
   })
 }

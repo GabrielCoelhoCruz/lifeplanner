@@ -1,0 +1,95 @@
+import { useEffect, useRef } from 'react'
+import { api } from '@/lib/api'
+import { getNotificationSetting, showTaskNotification } from '@/lib/notifications'
+
+const CHECK_INTERVAL = 15 * 60 * 1000 // Check every 15 minutes
+const NOTIFIED_KEY = 'lifeplanner-notified-tasks'
+
+function getNotifiedTasks(): Set<string> {
+  try {
+    const stored = localStorage.getItem(NOTIFIED_KEY)
+    return stored ? new Set(JSON.parse(stored)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+function markTaskNotified(taskId: string) {
+  const notified = getNotifiedTasks()
+  notified.add(taskId)
+  // Keep only last 100 entries to prevent localStorage bloat
+  const arr = Array.from(notified).slice(-100)
+  localStorage.setItem(NOTIFIED_KEY, JSON.stringify(arr))
+}
+
+function isWithin24Hours(dueDate: string | Date | null): boolean {
+  if (!dueDate) return false
+  const due = new Date(dueDate)
+  const now = new Date()
+  const diff = due.getTime() - now.getTime()
+  return diff > 0 && diff <= 24 * 60 * 60 * 1000
+}
+
+function isOverdue(dueDate: string | Date | null): boolean {
+  if (!dueDate) return false
+  return new Date(dueDate) < new Date()
+}
+
+function formatDueDate(dueDate: string | Date): string {
+  const date = new Date(dueDate)
+  const now = new Date()
+  const diffMs = date.getTime() - now.getTime()
+  const diffHours = Math.round(diffMs / (1000 * 60 * 60))
+
+  if (diffHours < 0) return 'atrasada!'
+  if (diffHours < 1) return 'menos de 1 hora'
+  if (diffHours < 24) return `${diffHours} horas`
+  return `${Math.round(diffHours / 24)} dias`
+}
+
+async function checkAndNotify() {
+  if (!getNotificationSetting()) return
+  if (Notification.permission !== 'granted') return
+
+  try {
+    // Fetch all projects, then all tasks
+    const projects = await api.projects.list()
+    const notified = getNotifiedTasks()
+
+    for (const project of projects) {
+      const tasks = await api.tasks.listByProject(project.id)
+
+      for (const task of tasks) {
+        if (task.status === 'done') continue
+        if (!task.dueDate) continue
+        if (notified.has(task.id)) continue
+
+        if (isOverdue(task.dueDate) || isWithin24Hours(task.dueDate)) {
+          showTaskNotification(task.title, formatDueDate(task.dueDate))
+          markTaskNotified(task.id)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Notification check failed:', error)
+  }
+}
+
+export { checkAndNotify }
+
+export function useNotificationChecker() {
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    // Check once on mount (with a small delay to not block initial render)
+    const timeout = setTimeout(checkAndNotify, 5000)
+
+    // Then check periodically
+    intervalRef.current = setInterval(checkAndNotify, CHECK_INTERVAL)
+
+    return () => {
+      clearTimeout(timeout)
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [])
+}
