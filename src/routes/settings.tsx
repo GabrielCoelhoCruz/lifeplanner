@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { CaretLeft, Bell, SpeakerHigh, Sun, Export, Upload } from '@phosphor-icons/react'
 import { api } from '@/lib/api'
+import { requestNotificationPermission, setNotificationSetting } from '@/lib/notifications'
 import type { Project, Task, Item } from '@/server/db/schema'
 
 export const Route = createFileRoute('/settings')({
@@ -57,6 +58,16 @@ function SettingsPage() {
   const [notifications, toggleNotifications] = useLocalToggle('settings:notifications', true)
   const [sounds, toggleSounds] = useLocalToggle('settings:sounds', true)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  async function handleToggleNotifications() {
+    const willEnable = !notifications
+    if (willEnable) {
+      const granted = await requestNotificationPermission()
+      if (!granted) return
+    }
+    setNotificationSetting(willEnable)
+    toggleNotifications()
+  }
   const [importing, setImporting] = React.useState(false)
 
   async function handleExport() {
@@ -121,7 +132,7 @@ function SettingsPage() {
               <p className="text-xs text-text-muted">Receber lembretes de tarefas</p>
             </div>
           </div>
-          <Toggle checked={notifications} onChange={toggleNotifications} />
+          <Toggle checked={notifications} onChange={handleToggleNotifications} />
         </div>
 
         <Separator />
