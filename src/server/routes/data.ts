@@ -53,6 +53,8 @@ dataRouter.post('/import', async (req, res) => {
           priority: t.priority || 'medium',
           status: t.status || 'todo',
           dueDate: t.dueDate || t.due_date ? new Date(t.dueDate || t.due_date) : null,
+          recurrence: t.recurrence || 'none',
+          recurrenceDays: t.recurrenceDays || t.recurrence_days || null,
           position: t.position || 0,
         }).returning()
         taskIdMap.set(t.id, created.id)

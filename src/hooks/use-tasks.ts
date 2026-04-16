@@ -48,6 +48,8 @@ export function useCreateTask() {
     mutationFn: (data: Partial<NewTask>) => api.tasks.create(data),
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: taskKeys.byProject(result.projectId) })
+      qc.invalidateQueries({ queryKey: viewKeys.today })
+      qc.invalidateQueries({ queryKey: viewKeys.upcoming })
     },
   })
 }
@@ -59,6 +61,8 @@ export function useUpdateTask() {
     onSuccess: (result, { id }) => {
       qc.invalidateQueries({ queryKey: taskKeys.byProject(result.projectId) })
       qc.invalidateQueries({ queryKey: taskKeys.detail(id) })
+      qc.invalidateQueries({ queryKey: viewKeys.today })
+      qc.invalidateQueries({ queryKey: viewKeys.upcoming })
     },
   })
 }
@@ -69,6 +73,8 @@ export function useDeleteTask() {
     mutationFn: ({ id, projectId }: { id: string; projectId: string }) => api.tasks.delete(id),
     onSuccess: (_, { projectId }) => {
       qc.invalidateQueries({ queryKey: taskKeys.byProject(projectId) })
+      qc.invalidateQueries({ queryKey: viewKeys.today })
+      qc.invalidateQueries({ queryKey: viewKeys.upcoming })
     },
   })
 }

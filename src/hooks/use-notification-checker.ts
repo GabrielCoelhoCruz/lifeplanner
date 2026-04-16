@@ -52,23 +52,16 @@ async function checkAndNotify() {
   if (Notification.permission !== 'granted') return
 
   try {
-    // Fetch all projects, then all tasks
-    const projects = await api.projects.list()
+    // Use the existing today endpoint — returns all overdue + due-today tasks in ONE query
+    const todayTasks = await api.views.today()
     const notified = getNotifiedTasks()
 
-    for (const project of projects) {
-      const tasks = await api.tasks.listByProject(project.id)
+    for (const { task } of todayTasks) {
+      if (notified.has(task.id)) continue
+      if (!task.dueDate) continue
 
-      for (const task of tasks) {
-        if (task.status === 'done') continue
-        if (!task.dueDate) continue
-        if (notified.has(task.id)) continue
-
-        if (isOverdue(task.dueDate) || isWithin24Hours(task.dueDate)) {
-          showTaskNotification(task.title, formatDueDate(task.dueDate))
-          markTaskNotified(task.id)
-        }
-      }
+      showTaskNotification(task.title, formatDueDate(task.dueDate))
+      markTaskNotified(task.id)
     }
   } catch (error) {
     console.error('Notification check failed:', error)
