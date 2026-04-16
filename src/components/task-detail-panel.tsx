@@ -1,4 +1,19 @@
 import * as React from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -6,8 +21,9 @@ import { PriorityBadge } from './priority-badge'
 import { StatusBadge } from './status-badge'
 import { ItemRow } from './item-row'
 import { useTask, useUpdateTask } from '@/hooks/use-tasks'
-import { useItems, useCreateItem, useUpdateItem, useDeleteItem } from '@/hooks/use-items'
+import { useItems, useCreateItem, useUpdateItem, useDeleteItem, itemKeys } from '@/hooks/use-items'
 import { toInputDate } from '@/lib/date'
+import { api } from '@/lib/api'
 import { Plus, Trash } from '@phosphor-icons/react'
 import type { Task } from '@/server/db/schema'
 
@@ -18,6 +34,7 @@ interface TaskDetailPanelProps {
 }
 
 export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelProps) {
+  const queryClient = useQueryClient()
   const { data: task } = useTask(taskId ?? '')
   const { data: items = [] } = useItems(taskId ?? '')
   const updateTask = useUpdateTask()
@@ -31,6 +48,12 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
   const [status, setStatus] = React.useState<Task['status']>('todo')
   const [dueDate, setDueDate] = React.useState('')
   const [newItemTitle, setNewItemTitle] = React.useState('')
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  )
+
+  const itemIds = React.useMemo(() => items.map((i) => i.id), [items])
 
   React.useEffect(() => {
     if (task) {
@@ -61,6 +84,28 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
     if (!newItemTitle.trim() || !taskId) return
     createItem.mutate({ taskId, title: newItemTitle.trim() })
     setNewItemTitle('')
+  }
+
+  async function handleItemDragEnd(event: DragEndEvent) {
+    if (!taskId) return
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = items.findIndex((i) => i.id === active.id)
+    const newIndex = items.findIndex((i) => i.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(items, oldIndex, newIndex)
+
+    // Optimistic update
+    queryClient.setQueryData(itemKeys.byTask(taskId), reordered.map((item, i) => ({ ...item, position: i })))
+
+    const orderItems = reordered.map((item, i) => ({ id: item.id, position: i }))
+    try {
+      await api.items.reorder(orderItems)
+    } catch {
+      queryClient.invalidateQueries({ queryKey: itemKeys.byTask(taskId) })
+    }
   }
 
   return (
@@ -145,28 +190,37 @@ export function TaskDetailPanel({ taskId, open, onOpenChange }: TaskDetailPanelP
               Checklist
             </label>
             <div className="mt-2 border border-border rounded-md overflow-hidden">
-              {items.map((item) => (
-                <div key={item.id} className="flex items-center group">
-                  <div className="flex-1">
-                    <ItemRow
-                      item={item}
-                      onToggle={() =>
-                        updateItem.mutate({
-                          id: item.id,
-                          data: { isCompleted: !item.isCompleted },
-                        })
-                      }
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => deleteItem.mutate({ id: item.id, taskId: item.taskId })}
-                    className="pr-3 opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-priority-high cursor-pointer"
-                  >
-                    <Trash size={14} />
-                  </button>
-                </div>
-              ))}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleItemDragEnd}
+              >
+                <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+                  {items.map((item) => (
+                    <div key={item.id} className="flex items-center group">
+                      <div className="flex-1">
+                        <ItemRow
+                          item={item}
+                          onToggle={() =>
+                            updateItem.mutate({
+                              id: item.id,
+                              data: { isCompleted: !item.isCompleted },
+                            })
+                          }
+                          sortable
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => deleteItem.mutate({ id: item.id, taskId: item.taskId })}
+                        className="pr-3 opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-priority-high cursor-pointer"
+                      >
+                        <Trash size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </SortableContext>
+              </DndContext>
               <div className="flex items-center gap-2 px-4 py-2 border-t border-border">
                 <Plus size={14} className="text-text-muted shrink-0" />
                 <input
