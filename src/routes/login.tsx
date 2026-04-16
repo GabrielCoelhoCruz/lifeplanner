@@ -260,7 +260,7 @@ function LoginPage() {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={() => toast.info('Recuperação de senha em breve.')}
+                  onClick={() => navigate({ to: '/forgot-password' })}
                   className="text-xs font-medium text-accent hover:text-accent-hover transition-colors cursor-pointer"
                 >
                   Esqueceu a senha?

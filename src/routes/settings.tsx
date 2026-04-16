@@ -7,6 +7,8 @@ import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTheme } from '@/lib/theme'
 import { api } from '@/lib/api'
+import { authClient } from '@/lib/auth-client'
+import { getInitials } from '@/lib/initials'
 import { requestNotificationPermission, setNotificationSetting } from '@/lib/notifications'
 import { checkAndNotify } from '@/hooks/use-notification-checker'
 
@@ -141,7 +143,9 @@ function SettingsPage() {
         Configurações
       </h1>
 
-      <div className="mt-8 bg-bg-elevated border border-border rounded-lg overflow-hidden">
+      <ProfileSection />
+
+      <div className="mt-4 bg-bg-elevated border border-border rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
             <Bell size={20} className="text-text-secondary" />
@@ -231,5 +235,231 @@ function SettingsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function ProfileSection() {
+  const { data: session } = authClient.useSession()
+  const user = session?.user
+
+  const [name, setName] = React.useState('')
+  const [savingProfile, setSavingProfile] = React.useState(false)
+
+  const [currentPassword, setCurrentPassword] = React.useState('')
+  const [newPassword, setNewPassword] = React.useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = React.useState('')
+  const [savingPassword, setSavingPassword] = React.useState(false)
+
+  React.useEffect(() => {
+    if (user?.name) setName(user.name)
+  }, [user?.name])
+
+  if (!user) return null
+
+  const initials = getInitials(user.name || user.email || '')
+
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault()
+    const trimmed = name.trim()
+    if (!trimmed) {
+      toast.error('Informe um nome.')
+      return
+    }
+    setSavingProfile(true)
+    try {
+      const { error } = await authClient.updateUser({ name: trimmed })
+      if (error) {
+        toast.error(error.message || 'Não foi possível atualizar o perfil.')
+        return
+      }
+      toast.success('Perfil atualizado.')
+    } catch (err) {
+      console.error('Update user error:', err)
+      toast.error('Algo deu errado. Tente novamente.')
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (newPassword.length < 8) {
+      toast.error('A nova senha precisa ter no mínimo 8 caracteres.')
+      return
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast.error('As senhas não coincidem.')
+      return
+    }
+    setSavingPassword(true)
+    try {
+      const { error } = await authClient.changePassword({
+        currentPassword,
+        newPassword,
+        revokeOtherSessions: true,
+      })
+      if (error) {
+        toast.error(error.message || 'Não foi possível atualizar a senha.')
+        return
+      }
+      toast.success('Senha atualizada.')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmNewPassword('')
+    } catch (err) {
+      console.error('Change password error:', err)
+      toast.error('Algo deu errado. Tente novamente.')
+    } finally {
+      setSavingPassword(false)
+    }
+  }
+
+  return (
+    <section className="mt-8">
+      <h2 className="text-xs font-medium uppercase tracking-wider text-text-muted">
+        Seu perfil
+      </h2>
+
+      <div className="mt-3 bg-bg-elevated border border-border rounded-lg p-5 md:p-6">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex md:flex-col items-center md:items-start gap-3 md:w-32 shrink-0">
+            <div
+              className="flex items-center justify-center w-20 h-20 rounded-full bg-accent text-white text-2xl font-medium"
+              aria-hidden
+            >
+              {user.image ? (
+                <img
+                  src={user.image}
+                  alt={user.name || 'Avatar'}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <span>{initials}</span>
+              )}
+            </div>
+            <span className="text-xs text-text-muted">Foto (em breve)</span>
+          </div>
+
+          <form onSubmit={handleSaveProfile} className="flex-1 space-y-4">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="profile-name"
+                className="block text-xs font-medium text-text-secondary"
+              >
+                Nome
+              </label>
+              <input
+                id="profile-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Como você quer ser chamado"
+                autoComplete="name"
+                className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-primary border border-border rounded-lg outline-none transition-colors focus:border-accent"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label
+                htmlFor="profile-email"
+                className="block text-xs font-medium text-text-secondary"
+              >
+                Email
+              </label>
+              <input
+                id="profile-email"
+                type="email"
+                value={user.email ?? ''}
+                readOnly
+                className="w-full h-11 px-3.5 text-sm text-text-muted bg-bg-primary border border-border rounded-lg outline-none cursor-not-allowed"
+              />
+              <p className="text-xs text-text-muted">
+                Para alterar o email, entre em contato com o suporte.
+              </p>
+            </div>
+
+            <div className="flex justify-end">
+              <Button type="submit" disabled={savingProfile} size="sm">
+                {savingProfile ? 'Salvando...' : 'Salvar'}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div className="mt-4 bg-bg-elevated border border-border rounded-lg p-5 md:p-6">
+        <h3 className="text-sm font-medium text-text-primary">
+          Alterar senha
+        </h3>
+        <p className="mt-1 text-xs text-text-muted">
+          As outras sessões serão desconectadas por segurança.
+        </p>
+
+        <form onSubmit={handleChangePassword} className="mt-5 space-y-4">
+          <div className="space-y-1.5">
+            <label
+              htmlFor="current-password"
+              className="block text-xs font-medium text-text-secondary"
+            >
+              Senha atual
+            </label>
+            <input
+              id="current-password"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+              className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-primary border border-border rounded-lg outline-none transition-colors focus:border-accent"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="new-password"
+              className="block text-xs font-medium text-text-secondary"
+            >
+              Nova senha
+            </label>
+            <input
+              id="new-password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Mínimo 8 caracteres"
+              autoComplete="new-password"
+              minLength={8}
+              required
+              className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-primary border border-border rounded-lg outline-none transition-colors focus:border-accent"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="confirm-new-password"
+              className="block text-xs font-medium text-text-secondary"
+            >
+              Confirmar nova senha
+            </label>
+            <input
+              id="confirm-new-password"
+              type="password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              autoComplete="new-password"
+              minLength={8}
+              required
+              className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-primary border border-border rounded-lg outline-none transition-colors focus:border-accent"
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <Button type="submit" disabled={savingPassword} size="sm">
+              {savingPassword ? 'Atualizando...' : 'Atualizar senha'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </section>
   )
 }

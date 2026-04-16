@@ -11,6 +11,7 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
 import { authClient } from '@/lib/auth-client'
+import { getInitials } from '@/lib/initials'
 
 export function UserMenu() {
   const navigate = useNavigate()
@@ -84,14 +85,3 @@ export function UserMenu() {
   )
 }
 
-function getInitials(nameOrEmail: string): string {
-  const source = nameOrEmail.trim()
-  if (!source) return '?'
-  // If it's an email, use the first letter of the local part
-  if (source.includes('@')) {
-    return source[0].toUpperCase()
-  }
-  const parts = source.split(/\s+/).filter(Boolean)
-  if (parts.length === 1) return parts[0][0].toUpperCase()
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-}
