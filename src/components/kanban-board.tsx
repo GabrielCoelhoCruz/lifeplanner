@@ -19,6 +19,7 @@ import {
 } from '@dnd-kit/sortable'
 import type { Task } from '@/server/db/schema'
 import { KanbanCard, KanbanCardOverlay } from './kanban-card'
+import { QuickAddTask } from './quick-add-task'
 import { taskKeys } from '@/hooks/use-tasks'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -43,11 +44,13 @@ function DroppableColumn({
   col,
   tasks,
   onTaskClick,
+  projectId,
 }: {
   id: string
   col: (typeof columns)[number]
   tasks: Task[]
   onTaskClick: (task: Task) => void
+  projectId?: string
 }) {
   const { setNodeRef, isOver } = useDroppable({ id })
   const taskIds = tasks.map((t) => t.id)
@@ -74,6 +77,9 @@ function DroppableColumn({
           ))}
         </div>
       </SortableContext>
+      {id === 'todo' && projectId && (
+        <QuickAddTask projectId={projectId} />
+      )}
     </div>
   )
 }
@@ -249,6 +255,7 @@ export function KanbanBoard({ tasks, onTaskClick, projectId }: KanbanBoardProps)
             col={col}
             tasks={tasksByColumn[col.key]}
             onTaskClick={onTaskClick}
+            projectId={projectId}
           />
         ))}
       </div>

@@ -25,6 +25,7 @@ import { SearchBar } from '@/components/search-bar'
 import { useDebounce } from '@/hooks/use-debounce'
 import { Fab } from '@/components/fab'
 import { CreateTaskDialog } from '@/components/create-task-dialog'
+import { QuickAddTask } from '@/components/quick-add-task'
 import { TaskDetailPanel } from '@/components/task-detail-panel'
 import { EditProjectDialog } from '@/components/edit-project-dialog'
 import { DeleteProjectDialog } from '@/components/delete-project-dialog'
@@ -231,40 +232,45 @@ function ProjectDetailPage() {
           </div>
         ) : tasks.length === 0 ? (
           <div className="mt-8 text-center">
-            <p className="text-text-muted">
+            <QuickAddTask projectId={projectId} />
+            <p className="text-text-muted mt-4">
               Nenhuma tarefa ainda. Crie a primeira!
             </p>
           </div>
         ) : filteredTasks.length === 0 ? (
           <div className="mt-8 text-center">
-            <p className="text-text-muted">
+            <QuickAddTask projectId={projectId} />
+            <p className="text-text-muted mt-4">
               Nenhuma tarefa encontrada.
             </p>
           </div>
         ) : currentView === 'list' ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-              <div className="border border-border rounded-lg overflow-hidden bg-bg-elevated">
-                {filteredTasks.map((task) => (
-                  <TaskRow
-                    key={task.id}
-                    task={task}
-                    onToggle={handleToggle}
-                    onClick={handleTaskClick}
-                    sortable
-                  />
-                ))}
-              </div>
-            </SortableContext>
-            <DragOverlay dropAnimation={null}>
-              {activeTask ? <TaskRowOverlay task={activeTask} /> : null}
-            </DragOverlay>
-          </DndContext>
+          <>
+            <QuickAddTask projectId={projectId} />
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+                <div className="border border-border rounded-lg overflow-hidden bg-bg-elevated">
+                  {filteredTasks.map((task) => (
+                    <TaskRow
+                      key={task.id}
+                      task={task}
+                      onToggle={handleToggle}
+                      onClick={handleTaskClick}
+                      sortable
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+              <DragOverlay dropAnimation={null}>
+                {activeTask ? <TaskRowOverlay task={activeTask} /> : null}
+              </DragOverlay>
+            </DndContext>
+          </>
         ) : (
           <KanbanBoard
             tasks={filteredTasks}
