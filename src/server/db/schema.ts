@@ -6,6 +6,7 @@ export const recurrenceEnum = pgEnum('recurrence', ['daily', 'weekly', 'monthly'
 
 export const projects = pgTable('projects', {
   id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').notNull(),
   name: text('name').notNull(),
   description: text('description').default(''),
   color: text('color').default('#6366F1'),

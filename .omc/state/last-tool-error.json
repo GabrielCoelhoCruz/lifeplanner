@@ -1,7 +1,7 @@
 {
-  "tool_name": "mcp__neon__run_sql",
-  "tool_input_preview": "{\"params\":\"{\\\"projectId\\\": \\\"winter-sea-34530479\\\", \\\"sql\\\": \\\"ALTER ROLE neondb_owner WITH PASSWORD 'YE_GRbhxGuaOYn8--D8lX4VdQI-2zM8f';\\\"}\"}",
-  "error": "MCP error -32602: MCP error -32602: Invalid arguments for tool run_sql: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"object\",\n    \"received\": \"string\",\n    \"path\": [\n      \"params\"\n    ],\n    \"message\": \"Expected object, received string\"\n  }\n]",
-  "timestamp": "2026-04-16T19:49:35.420Z",
+  "tool_name": "mcp__neon__describe_project",
+  "tool_input_preview": "{\"params\":\"{\\\"projectId\\\": \\\"winter-sea-34530479\\\"}\"}",
+  "error": "MCP error -32602: MCP error -32602: Invalid arguments for tool describe_project: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"object\",\n    \"received\": \"string\",\n    \"path\": [\n      \"params\"\n    ],\n    \"message\": \"Expected object, received string\"\n  }\n]",
+  "timestamp": "2026-04-16T19:59:21.335Z",
   "retry_count": 1
 }

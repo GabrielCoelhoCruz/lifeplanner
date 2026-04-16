@@ -1,7 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
-import { tasks, items } from '../db/schema'
-import { eq, asc, sql, inArray, count } from 'drizzle-orm'
+import { tasks, items, projects } from '../db/schema'
+import { eq, and, asc, sql, inArray, count } from 'drizzle-orm'
+import { requireUser, type AuthUser } from '../auth'
 
 function calculateNextDueDate(
   currentDueDate: Date | null,
@@ -35,9 +36,38 @@ function calculateNextDueDate(
   return base
 }
 
+/**
+ * Ensures the given project belongs to the user. Throws if not.
+ * Used before any task mutation to prevent cross-user access.
+ */
+async function assertProjectOwned(projectId: string, user: AuthUser) {
+  const [p] = await db
+    .select({ id: projects.id })
+    .from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, user.id)))
+  if (!p) throw new Error('Project not found')
+}
+
+/**
+ * Ensures the given task belongs to a project owned by the user.
+ * Returns the task's projectId for further use.
+ */
+async function assertTaskOwned(taskId: string, user: AuthUser): Promise<string> {
+  const [row] = await db
+    .select({ projectId: tasks.projectId })
+    .from(tasks)
+    .innerJoin(projects, eq(tasks.projectId, projects.id))
+    .where(and(eq(tasks.id, taskId), eq(projects.userId, user.id)))
+  if (!row) throw new Error('Task not found')
+  return row.projectId
+}
+
 export const listTasksByProject = createServerFn({ method: 'GET' })
   .inputValidator((data: { projectId: string }) => data)
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    await assertProjectOwned(data.projectId, user)
+
     const taskList = await db
       .select()
       .from(tasks)
@@ -50,9 +80,7 @@ export const listTasksByProject = createServerFn({ method: 'GET' })
         .select({
           taskId: items.taskId,
           total: count(),
-          done: count(
-            sql`CASE WHEN ${items.isCompleted} = true THEN 1 END`,
-          ),
+          done: count(sql`CASE WHEN ${items.isCompleted} = true THEN 1 END`),
         })
         .from(items)
         .where(inArray(items.taskId, taskIds))
@@ -78,12 +106,14 @@ export const listTasksByProject = createServerFn({ method: 'GET' })
 export const getTask = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
+    const user = await requireUser()
     const [result] = await db
-      .select()
+      .select({ task: tasks })
       .from(tasks)
-      .where(eq(tasks.id, data.id))
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .where(and(eq(tasks.id, data.id), eq(projects.userId, user.id)))
     if (!result) throw new Error('Task not found')
-    return result
+    return result.task
   })
 
 export const createTask = createServerFn({ method: 'POST' })
@@ -100,6 +130,8 @@ export const createTask = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    await assertProjectOwned(data.projectId, user)
     if (!data.title?.trim()) throw new Error('Título é obrigatório')
     const [result] = await db
       .insert(tasks)
@@ -108,8 +140,7 @@ export const createTask = createServerFn({ method: 'POST' })
         title: data.title.trim(),
         description: data.description,
         priority: (data.priority as 'high' | 'medium' | 'low') || undefined,
-        status:
-          (data.status as 'todo' | 'in_progress' | 'done') || undefined,
+        status: (data.status as 'todo' | 'in_progress' | 'done') || undefined,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         recurrence:
           (data.recurrence as
@@ -139,6 +170,9 @@ export const updateTask = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    await assertTaskOwned(data.id, user)
+
     const { id, ...fields } = data
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (fields.title !== undefined) updates.title = fields.title.trim()
@@ -149,8 +183,7 @@ export const updateTask = createServerFn({ method: 'POST' })
     if (fields.dueDate !== undefined)
       updates.dueDate = fields.dueDate ? new Date(fields.dueDate) : null
     if (fields.position !== undefined) updates.position = fields.position
-    if (fields.recurrence !== undefined)
-      updates.recurrence = fields.recurrence
+    if (fields.recurrence !== undefined) updates.recurrence = fields.recurrence
     if (fields.recurrenceDays !== undefined)
       updates.recurrenceDays = fields.recurrenceDays
 
@@ -191,6 +224,8 @@ export const updateTask = createServerFn({ method: 'POST' })
 export const deleteTask = createServerFn({ method: 'POST' })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    await assertTaskOwned(data.id, user)
     await db.delete(tasks).where(eq(tasks.id, data.id))
     return { success: true }
   })
@@ -202,11 +237,24 @@ export const reorderTasks = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    if (data.items.length === 0) return { success: true }
+
+    // Verify all task IDs belong to the user (single query)
+    const ids = data.items.map((i) => i.id)
+    const owned = await db
+      .select({ id: tasks.id })
+      .from(tasks)
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .where(and(inArray(tasks.id, ids), eq(projects.userId, user.id)))
+    const ownedIds = new Set(owned.map((o) => o.id))
+    if (ownedIds.size !== ids.length) {
+      throw new Error('Some tasks do not belong to this user')
+    }
+
     await Promise.all(
       data.items.map((item) => {
-        const updates: Record<string, unknown> = {
-          position: item.position,
-        }
+        const updates: Record<string, unknown> = { position: item.position }
         if (item.status) updates.status = item.status
         return db.update(tasks).set(updates).where(eq(tasks.id, item.id))
       }),

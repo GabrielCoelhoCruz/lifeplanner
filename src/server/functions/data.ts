@@ -1,22 +1,39 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
 import { projects, tasks, items } from '../db/schema'
-import { asc } from 'drizzle-orm'
+import { eq, inArray, asc } from 'drizzle-orm'
+import { requireUser } from '../auth'
 
 export const exportAllData = createServerFn({ method: 'GET' }).handler(
   async () => {
+    const user = await requireUser()
+
     const allProjects = await db
       .select()
       .from(projects)
+      .where(eq(projects.userId, user.id))
       .orderBy(asc(projects.position))
-    const allTasks = await db
-      .select()
-      .from(tasks)
-      .orderBy(asc(tasks.position))
-    const allItems = await db
-      .select()
-      .from(items)
-      .orderBy(asc(items.position))
+
+    const projectIds = allProjects.map((p) => p.id)
+    const allTasks =
+      projectIds.length > 0
+        ? await db
+            .select()
+            .from(tasks)
+            .where(inArray(tasks.projectId, projectIds))
+            .orderBy(asc(tasks.position))
+        : []
+
+    const taskIds = allTasks.map((t) => t.id)
+    const allItems =
+      taskIds.length > 0
+        ? await db
+            .select()
+            .from(items)
+            .where(inArray(items.taskId, taskIds))
+            .orderBy(asc(items.position))
+        : []
+
     return { projects: allProjects, tasks: allTasks, items: allItems }
   },
 )
@@ -30,6 +47,7 @@ export const importAllData = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
+    const user = await requireUser()
     const importProjects = data.projects
     const importTasks = data.tasks
     const importItems = data.items
@@ -45,6 +63,7 @@ export const importAllData = createServerFn({ method: 'POST' })
       const [created] = await db
         .insert(projects)
         .values({
+          userId: user.id,
           name: p.name as string,
           description: (p.description as string) || '',
           color: (p.color as string) || '#6366F1',

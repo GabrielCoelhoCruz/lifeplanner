@@ -1,15 +1,18 @@
 /// <reference types="vite/client" />
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Outlet,
   createRootRoute,
   HeadContent,
   Scripts,
+  useNavigate,
   useRouterState,
 } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
+import { NeonAuthUIProvider } from '@neondatabase/neon-js/auth/react'
+import { authClient } from '@/lib/auth-client'
 import { Header } from '@/components/layout/header'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { ThemeProvider } from '@/lib/theme'
@@ -63,13 +66,15 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       </head>
       <body>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <PomodoroProvider>
-              <RootLayout>{children}</RootLayout>
-              <PomodoroBar />
-              <Toaster position="bottom-right" richColors closeButton />
-            </PomodoroProvider>
-          </ThemeProvider>
+          <NeonAuthUIProvider authClient={authClient}>
+            <ThemeProvider>
+              <PomodoroProvider>
+                <RootLayout>{children}</RootLayout>
+                <PomodoroBar />
+                <Toaster position="bottom-right" richColors closeButton />
+              </PomodoroProvider>
+            </ThemeProvider>
+          </NeonAuthUIProvider>
         </QueryClientProvider>
         <Scripts />
       </body>
@@ -80,7 +85,17 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 function RootLayout({ children }: { children: ReactNode }) {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const navigate = useNavigate()
   const isFullBleedRoute = pathname === '/login'
+
+  // Session guard: redirect unauthenticated users to /login
+  const { data: session, isPending } = authClient.useSession()
+  useEffect(() => {
+    if (isPending) return
+    if (!session && !isFullBleedRoute) {
+      navigate({ to: '/login', replace: true })
+    }
+  }, [session, isPending, isFullBleedRoute, navigate])
 
   useNotificationChecker()
   useKeyboardShortcuts({
@@ -96,9 +111,13 @@ function RootLayout({ children }: { children: ReactNode }) {
     return (
       <div className="min-h-screen bg-bg-primary">
         <ErrorBoundary>{children}</ErrorBoundary>
-        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
       </div>
     )
+  }
+
+  // Show nothing while checking session or while redirecting
+  if (isPending || !session) {
+    return <div className="min-h-screen bg-bg-primary" />
   }
 
   return (

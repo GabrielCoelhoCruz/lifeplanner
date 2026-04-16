@@ -176,8 +176,8 @@
   "hotPaths": [
     {
       "path": "src\\routes\\__root.tsx",
-      "accessCount": 30,
-      "lastAccessed": 1776367747653,
+      "accessCount": 35,
+      "lastAccessed": 1776370213694,
       "type": "file"
     },
     {
@@ -235,6 +235,12 @@
       "type": "file"
     },
     {
+      "path": "src\\components\\layout\\header.tsx",
+      "accessCount": 16,
+      "lastAccessed": 1776370239909,
+      "type": "file"
+    },
+    {
       "path": "src\\server\\index.ts",
       "accessCount": 14,
       "lastAccessed": 1776342358574,
@@ -247,9 +253,9 @@
       "type": "file"
     },
     {
-      "path": "src\\components\\layout\\header.tsx",
+      "path": "src\\server\\db\\schema.ts",
       "accessCount": 13,
-      "lastAccessed": 1776358544044,
+      "lastAccessed": 1776370371584,
       "type": "file"
     },
     {
@@ -268,12 +274,6 @@
       "path": "src\\lib\\notifications.ts",
       "accessCount": 12,
       "lastAccessed": 1776358513202,
-      "type": "file"
-    },
-    {
-      "path": "src\\server\\db\\schema.ts",
-      "accessCount": 11,
-      "lastAccessed": 1776344873156,
       "type": "file"
     },
     {

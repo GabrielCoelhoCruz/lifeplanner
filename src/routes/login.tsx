@@ -1,36 +1,81 @@
 import { useState } from 'react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { TaskiLogo } from '@/components/taski-logo'
+import { authClient } from '@/lib/auth-client'
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
 })
 
+type AuthMode = 'signin' | 'signup'
+
 function LoginPage() {
   const navigate = useNavigate()
+  const [mode, setMode] = useState<AuthMode>('signin')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  const isSignUp = mode === 'signup'
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email.trim() || !password) {
       toast.error('Preencha email e senha.')
       return
     }
+    if (isSignUp && !name.trim()) {
+      toast.error('Informe seu nome.')
+      return
+    }
 
     setLoading(true)
-    // Placeholder — auth not implemented yet
-    setTimeout(() => {
-      setLoading(false)
-      toast.success('Bem-vindo ao Taski!')
+    try {
+      if (isSignUp) {
+        const { error } = await authClient.signUp.email({
+          email: email.trim(),
+          password,
+          name: name.trim(),
+        })
+        if (error) {
+          toast.error(error.message || 'Erro ao criar conta.')
+          return
+        }
+        toast.success(`Bem-vindo ao Taski, ${name.trim().split(' ')[0]}!`)
+      } else {
+        const { error } = await authClient.signIn.email({
+          email: email.trim(),
+          password,
+        })
+        if (error) {
+          toast.error(error.message || 'Email ou senha incorretos.')
+          return
+        }
+        toast.success('Bem-vindo de volta!')
+      }
       navigate({ to: '/' })
-    }, 600)
+    } catch (err) {
+      console.error('Auth error:', err)
+      toast.error('Algo deu errado. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  function handleSocial(provider: 'google' | 'github') {
-    toast.info(`Login com ${provider === 'google' ? 'Google' : 'GitHub'} em breve.`)
+  async function handleGoogle() {
+    setLoading(true)
+    try {
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/',
+      })
+    } catch (err) {
+      console.error('Google sign-in error:', err)
+      toast.error('Erro ao entrar com Google.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -142,13 +187,36 @@ function LoginPage() {
       <main className="flex-1 flex items-center justify-center px-5 py-10 md:px-20 md:py-12">
         <div className="w-full max-w-sm">
           <h2 className="text-3xl font-normal text-text-primary tracking-tight">
-            Bem-vindo ao Taski
+            {isSignUp ? 'Crie sua conta' : 'Bem-vindo ao Taski'}
           </h2>
           <p className="mt-2 text-sm text-text-secondary leading-relaxed">
-            Entre na sua conta para continuar organizando.
+            {isSignUp
+              ? 'Comece a organizar sua vida em um só lugar.'
+              : 'Entre na sua conta para continuar organizando.'}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+            {isSignUp && (
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="login-name"
+                  className="block text-xs font-medium text-text-secondary"
+                >
+                  Nome
+                </label>
+                <input
+                  id="login-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Como você quer ser chamado"
+                  autoComplete="name"
+                  required
+                  className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-elevated border border-border rounded-lg outline-none transition-colors focus:border-accent"
+                />
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <label
                 htmlFor="login-email"
@@ -180,29 +248,38 @@ function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete="current-password"
+                placeholder={isSignUp ? 'Mínimo 8 caracteres' : '••••••••'}
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                minLength={isSignUp ? 8 : undefined}
                 required
                 className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-elevated border border-border rounded-lg outline-none transition-colors focus:border-accent"
               />
             </div>
 
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => toast.info('Recuperação de senha em breve.')}
-                className="text-xs font-medium text-accent hover:text-accent-hover transition-colors cursor-pointer"
-              >
-                Esqueceu a senha?
-              </button>
-            </div>
+            {!isSignUp && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => toast.info('Recuperação de senha em breve.')}
+                  className="text-xs font-medium text-accent hover:text-accent-hover transition-colors cursor-pointer"
+                >
+                  Esqueceu a senha?
+                </button>
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
               className="w-full h-12 text-sm font-medium text-white bg-accent hover:bg-accent-hover rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading
+                ? isSignUp
+                  ? 'Criando conta...'
+                  : 'Entrando...'
+                : isSignUp
+                  ? 'Criar conta'
+                  : 'Entrar'}
             </button>
           </form>
 
@@ -214,34 +291,26 @@ function LoginPage() {
           </div>
 
           {/* Social */}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => handleSocial('google')}
-              className="flex items-center justify-center gap-2 h-11 text-sm font-medium text-text-primary bg-bg-elevated border border-border rounded-lg hover:bg-bg-secondary transition-colors cursor-pointer"
-            >
-              <GoogleMark />
-              Google
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSocial('github')}
-              className="flex items-center justify-center gap-2 h-11 text-sm font-medium text-text-primary bg-bg-elevated border border-border rounded-lg hover:bg-bg-secondary transition-colors cursor-pointer"
-            >
-              <GithubMark />
-              GitHub
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 h-11 text-sm font-medium text-text-primary bg-bg-elevated border border-border rounded-lg hover:bg-bg-secondary transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <GoogleMark />
+            Google
+          </button>
 
-          {/* Sign up */}
+          {/* Toggle mode */}
           <p className="mt-8 text-center text-sm text-text-muted">
-            Não tem conta?{' '}
-            <Link
-              to="/"
-              className="font-medium text-accent hover:text-accent-hover transition-colors"
+            {isSignUp ? 'Já tem conta?' : 'Não tem conta?'}{' '}
+            <button
+              type="button"
+              onClick={() => setMode(isSignUp ? 'signin' : 'signup')}
+              className="font-medium text-accent hover:text-accent-hover transition-colors cursor-pointer"
             >
-              Criar conta grátis
-            </Link>
+              {isSignUp ? 'Entrar' : 'Criar conta grátis'}
+            </button>
           </p>
         </div>
       </main>
@@ -272,10 +341,3 @@ function GoogleMark() {
   )
 }
 
-function GithubMark() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <path d="M12 .3a12 12 0 0 0-3.79 23.38c.6.12.83-.26.83-.58v-2.23c-3.34.73-4.04-1.42-4.04-1.42-.54-1.4-1.33-1.77-1.33-1.77-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .1-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.81 5.63-5.48 5.92.42.36.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .3z" />
-    </svg>
-  )
-}

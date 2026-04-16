@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import { Gear, CalendarBlank, MagnifyingGlass } from '@phosphor-icons/react'
+import { CalendarBlank, MagnifyingGlass } from '@phosphor-icons/react'
 import { TaskiLogo } from '@/components/taski-logo'
+import { UserMenu } from '@/components/user-menu'
 
 interface HeaderProps {
   onShowShortcuts?: () => void
@@ -51,13 +52,7 @@ export function Header({ onShowShortcuts }: HeaderProps) {
         >
           <CalendarBlank size={22} />
         </Link>
-        <Link
-          to="/settings"
-          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-secondary transition-colors"
-          aria-label="Configurações"
-        >
-          <Gear size={22} />
-        </Link>
+        <UserMenu />
       </div>
     </header>
   )

@@ -1,11 +1,41 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
-import { items } from '../db/schema'
-import { eq, asc } from 'drizzle-orm'
+import { items, tasks, projects } from '../db/schema'
+import { eq, and, asc, inArray } from 'drizzle-orm'
+import { requireUser, type AuthUser } from '../auth'
+
+/**
+ * Ensures the given task belongs to a project owned by the user.
+ */
+async function assertTaskOwned(taskId: string, user: AuthUser) {
+  const [row] = await db
+    .select({ id: tasks.id })
+    .from(tasks)
+    .innerJoin(projects, eq(tasks.projectId, projects.id))
+    .where(and(eq(tasks.id, taskId), eq(projects.userId, user.id)))
+  if (!row) throw new Error('Task not found')
+}
+
+/**
+ * Ensures the given item belongs to a task in a project owned by the user.
+ * Returns the item's taskId.
+ */
+async function assertItemOwned(itemId: string, user: AuthUser): Promise<string> {
+  const [row] = await db
+    .select({ taskId: items.taskId })
+    .from(items)
+    .innerJoin(tasks, eq(items.taskId, tasks.id))
+    .innerJoin(projects, eq(tasks.projectId, projects.id))
+    .where(and(eq(items.id, itemId), eq(projects.userId, user.id)))
+  if (!row) throw new Error('Item not found')
+  return row.taskId
+}
 
 export const listItemsByTask = createServerFn({ method: 'GET' })
   .inputValidator((data: { taskId: string }) => data)
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    await assertTaskOwned(data.taskId, user)
     return db
       .select()
       .from(items)
@@ -18,6 +48,8 @@ export const createItem = createServerFn({ method: 'POST' })
     (data: { taskId: string; title: string; description?: string }) => data,
   )
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    await assertTaskOwned(data.taskId, user)
     if (!data.title?.trim()) throw new Error('Título é obrigatório')
     const [result] = await db
       .insert(items)
@@ -41,6 +73,9 @@ export const updateItem = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    await assertItemOwned(data.id, user)
+
     const { id, ...fields } = data
     const updates: Record<string, unknown> = {}
     if (fields.title !== undefined) updates.title = fields.title.trim()
@@ -62,6 +97,8 @@ export const updateItem = createServerFn({ method: 'POST' })
 export const deleteItem = createServerFn({ method: 'POST' })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    await assertItemOwned(data.id, user)
     await db.delete(items).where(eq(items.id, data.id))
     return { success: true }
   })
@@ -71,6 +108,20 @@ export const reorderItems = createServerFn({ method: 'POST' })
     (data: { items: { id: string; position: number }[] }) => data,
   )
   .handler(async ({ data }) => {
+    const user = await requireUser()
+    if (data.items.length === 0) return { success: true }
+
+    const ids = data.items.map((i) => i.id)
+    const owned = await db
+      .select({ id: items.id })
+      .from(items)
+      .innerJoin(tasks, eq(items.taskId, tasks.id))
+      .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .where(and(inArray(items.id, ids), eq(projects.userId, user.id)))
+    if (owned.length !== ids.length) {
+      throw new Error('Some items do not belong to this user')
+    }
+
     await Promise.all(
       data.items.map((item) =>
         db
