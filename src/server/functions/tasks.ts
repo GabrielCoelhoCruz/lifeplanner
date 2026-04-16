@@ -36,10 +36,6 @@ function calculateNextDueDate(
   return base
 }
 
-/**
- * Ensures the given project belongs to the user. Throws if not.
- * Used before any task mutation to prevent cross-user access.
- */
 async function assertProjectOwned(projectId: string, user: AuthUser) {
   const [p] = await db
     .select({ id: projects.id })
@@ -48,10 +44,6 @@ async function assertProjectOwned(projectId: string, user: AuthUser) {
   if (!p) throw new Error('Project not found')
 }
 
-/**
- * Ensures the given task belongs to a project owned by the user.
- * Returns the task's projectId for further use.
- */
 async function assertTaskOwned(taskId: string, user: AuthUser): Promise<string> {
   const [row] = await db
     .select({ projectId: tasks.projectId })
@@ -63,9 +55,9 @@ async function assertTaskOwned(taskId: string, user: AuthUser): Promise<string> 
 }
 
 export const listTasksByProject = createServerFn({ method: 'GET' })
-  .inputValidator((data: { projectId: string }) => data)
+  .inputValidator((data: { projectId: string; userId: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     await assertProjectOwned(data.projectId, user)
 
     const taskList = await db
@@ -104,9 +96,9 @@ export const listTasksByProject = createServerFn({ method: 'GET' })
   })
 
 export const getTask = createServerFn({ method: 'GET' })
-  .inputValidator((data: { id: string }) => data)
+  .inputValidator((data: { id: string; userId: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     const [result] = await db
       .select({ task: tasks })
       .from(tasks)
@@ -119,6 +111,7 @@ export const getTask = createServerFn({ method: 'GET' })
 export const createTask = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
+      userId: string
       projectId: string
       title: string
       description?: string
@@ -130,7 +123,7 @@ export const createTask = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     await assertProjectOwned(data.projectId, user)
     if (!data.title?.trim()) throw new Error('Título é obrigatório')
     const [result] = await db
@@ -158,6 +151,7 @@ export const createTask = createServerFn({ method: 'POST' })
 export const updateTask = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
+      userId: string
       id: string
       title?: string
       description?: string
@@ -170,10 +164,11 @@ export const updateTask = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     await assertTaskOwned(data.id, user)
 
-    const { id, ...fields } = data
+    const { id, userId: _u, ...fields } = data
+    void _u
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (fields.title !== undefined) updates.title = fields.title.trim()
     if (fields.description !== undefined)
@@ -194,7 +189,6 @@ export const updateTask = createServerFn({ method: 'POST' })
       .returning()
     if (!result) throw new Error('Task not found')
 
-    // Auto-create next occurrence for recurring tasks marked as done
     if (
       updates.status === 'done' &&
       result.recurrence &&
@@ -222,9 +216,9 @@ export const updateTask = createServerFn({ method: 'POST' })
   })
 
 export const deleteTask = createServerFn({ method: 'POST' })
-  .inputValidator((data: { id: string }) => data)
+  .inputValidator((data: { id: string; userId: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     await assertTaskOwned(data.id, user)
     await db.delete(tasks).where(eq(tasks.id, data.id))
     return { success: true }
@@ -233,14 +227,14 @@ export const deleteTask = createServerFn({ method: 'POST' })
 export const reorderTasks = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
+      userId: string
       items: { id: string; position: number; status?: string }[]
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     if (data.items.length === 0) return { success: true }
 
-    // Verify all task IDs belong to the user (single query)
     const ids = data.items.map((i) => i.id)
     const owned = await db
       .select({ id: tasks.id })

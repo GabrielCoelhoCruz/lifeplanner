@@ -4,9 +4,6 @@ import { items, tasks, projects } from '../db/schema'
 import { eq, and, asc, inArray } from 'drizzle-orm'
 import { requireUser, type AuthUser } from '../auth'
 
-/**
- * Ensures the given task belongs to a project owned by the user.
- */
 async function assertTaskOwned(taskId: string, user: AuthUser) {
   const [row] = await db
     .select({ id: tasks.id })
@@ -16,10 +13,6 @@ async function assertTaskOwned(taskId: string, user: AuthUser) {
   if (!row) throw new Error('Task not found')
 }
 
-/**
- * Ensures the given item belongs to a task in a project owned by the user.
- * Returns the item's taskId.
- */
 async function assertItemOwned(itemId: string, user: AuthUser): Promise<string> {
   const [row] = await db
     .select({ taskId: items.taskId })
@@ -32,9 +25,9 @@ async function assertItemOwned(itemId: string, user: AuthUser): Promise<string> 
 }
 
 export const listItemsByTask = createServerFn({ method: 'GET' })
-  .inputValidator((data: { taskId: string }) => data)
+  .inputValidator((data: { taskId: string; userId: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     await assertTaskOwned(data.taskId, user)
     return db
       .select()
@@ -45,10 +38,15 @@ export const listItemsByTask = createServerFn({ method: 'GET' })
 
 export const createItem = createServerFn({ method: 'POST' })
   .inputValidator(
-    (data: { taskId: string; title: string; description?: string }) => data,
+    (data: {
+      userId: string
+      taskId: string
+      title: string
+      description?: string
+    }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     await assertTaskOwned(data.taskId, user)
     if (!data.title?.trim()) throw new Error('Título é obrigatório')
     const [result] = await db
@@ -65,6 +63,7 @@ export const createItem = createServerFn({ method: 'POST' })
 export const updateItem = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
+      userId: string
       id: string
       title?: string
       description?: string
@@ -73,10 +72,11 @@ export const updateItem = createServerFn({ method: 'POST' })
     }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     await assertItemOwned(data.id, user)
 
-    const { id, ...fields } = data
+    const { id, userId: _u, ...fields } = data
+    void _u
     const updates: Record<string, unknown> = {}
     if (fields.title !== undefined) updates.title = fields.title.trim()
     if (fields.description !== undefined)
@@ -95,9 +95,9 @@ export const updateItem = createServerFn({ method: 'POST' })
   })
 
 export const deleteItem = createServerFn({ method: 'POST' })
-  .inputValidator((data: { id: string }) => data)
+  .inputValidator((data: { id: string; userId: string }) => data)
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     await assertItemOwned(data.id, user)
     await db.delete(items).where(eq(items.id, data.id))
     return { success: true }
@@ -105,10 +105,13 @@ export const deleteItem = createServerFn({ method: 'POST' })
 
 export const reorderItems = createServerFn({ method: 'POST' })
   .inputValidator(
-    (data: { items: { id: string; position: number }[] }) => data,
+    (data: {
+      userId: string
+      items: { id: string; position: number }[]
+    }) => data,
   )
   .handler(async ({ data }) => {
-    const user = await requireUser()
+    const user = await requireUser(data.userId)
     if (data.items.length === 0) return { success: true }
 
     const ids = data.items.map((i) => i.id)

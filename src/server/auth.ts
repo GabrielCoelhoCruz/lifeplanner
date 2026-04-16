@@ -1,6 +1,5 @@
-import { getRequest } from '@tanstack/react-start/server'
-
-const AUTH_URL = process.env.VITE_NEON_AUTH_URL
+import { db } from './db'
+import { sql } from 'drizzle-orm'
 
 export interface AuthUser {
   id: string
@@ -10,50 +9,31 @@ export interface AuthUser {
 }
 
 /**
- * Reads the session from the incoming request's cookies by calling
- * Better Auth's /get-session endpoint. Returns null if not authenticated.
+ * Validates a userId against the Neon Auth user table.
+ *
+ * This is a pragmatic approach while we migrate to signed-token cross-domain auth.
+ * The client (authenticated via Better Auth cookies on the auth subdomain) passes its userId
+ * as part of each server function call. The server confirms the userId exists as a real
+ * Better Auth user before serving data.
+ *
+ * Security note: this provides multi-user data isolation but not cryptographic auth —
+ * a malicious actor who knows another user's UUID could access their data.
+ * TODO: migrate to signed session verification once cross-domain cookies are configured.
  */
-export async function getCurrentUser(): Promise<AuthUser | null> {
-  if (!AUTH_URL) {
-    throw new Error('VITE_NEON_AUTH_URL not configured on the server')
+export async function requireUser(userId: string | undefined): Promise<AuthUser> {
+  if (!userId || typeof userId !== 'string') {
+    throw new Error('Não autenticado')
   }
 
-  let cookieHeader: string | null = null
-  try {
-    const req = getRequest()
-    cookieHeader = req?.headers?.get('cookie') ?? null
-  } catch {
-    // Outside a request context (e.g. build-time)
-    return null
-  }
-  if (!cookieHeader) return null
+  const rows = (await db.execute(
+    sql`SELECT id, email, name, image FROM neon_auth."user" WHERE id = ${userId} LIMIT 1`,
+  )) as unknown as {
+    rows?: Array<{ id: string; email: string; name: string | null; image: string | null }>
+  } & Array<{ id: string; email: string; name: string | null; image: string | null }>
 
-  try {
-    const res = await fetch(`${AUTH_URL}/get-session`, {
-      headers: { cookie: cookieHeader },
-      // Ensure we don't cache session lookups
-      cache: 'no-store',
-    })
-    if (!res.ok) return null
-
-    const data = (await res.json()) as { user?: AuthUser } | null
-    return data?.user ?? null
-  } catch (err) {
-    console.error('getCurrentUser error:', err)
-    return null
-  }
-}
-
-/**
- * Gets the current user or throws. Use inside server functions that require auth.
- */
-export async function requireUser(): Promise<AuthUser> {
-  const user = await getCurrentUser()
-  if (!user) {
-    const err = new Error('Unauthorized')
-    // @ts-expect-error — status hint for better error responses
-    err.status = 401
-    throw err
-  }
+  // Drizzle neon-http returns either an array or an object with .rows
+  const results = Array.isArray(rows) ? rows : (rows.rows ?? [])
+  const user = results[0]
+  if (!user) throw new Error('Usuário não encontrado')
   return user
 }

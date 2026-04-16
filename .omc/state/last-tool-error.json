@@ -1,7 +1,7 @@
 {
-  "tool_name": "mcp__neon__describe_project",
-  "tool_input_preview": "{\"params\":\"{\\\"projectId\\\": \\\"winter-sea-34530479\\\"}\"}",
-  "error": "MCP error -32602: MCP error -32602: Invalid arguments for tool describe_project: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"object\",\n    \"received\": \"string\",\n    \"path\": [\n      \"params\"\n    ],\n    \"message\": \"Expected object, received string\"\n  }\n]",
-  "timestamp": "2026-04-16T19:59:21.335Z",
+  "tool_name": "mcp__Claude_in_Chrome__javascript_tool",
+  "tool_input_preview": "{\"code\":\"location.href = 'https://planner-flame-three.vercel.app/login'; 'navigating'\",\"operation\":\"execute\"}",
+  "error": "MCP error -32602: Input validation error: Invalid arguments for tool javascript_tool: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"action\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"text\"\n    ],\n    \"message\": \"Required\"\n  },\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"number\",\n    \"received\": \"undefined\",\n    \"path\": [\n     ...",
+  "timestamp": "2026-04-16T20:24:46.182Z",
   "retry_count": 1
 }
