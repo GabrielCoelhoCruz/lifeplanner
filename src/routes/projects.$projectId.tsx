@@ -37,8 +37,11 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { CaretLeft, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react'
+import { EmptyState } from '@/components/empty-state'
+import { IllustrationTasks, IllustrationSearch } from '@/components/illustrations'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
+import type { TaskWithCounts } from '@/lib/api'
 import type { Task } from '@/server/db/schema'
 
 type View = 'list' | 'kanban'
@@ -64,7 +67,7 @@ function ProjectDetailPage() {
   const [detailOpen, setDetailOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
   const debouncedSearch = useDebounce(search, 300)
-  const [activeTask, setActiveTask] = React.useState<Task | null>(null)
+  const [activeTask, setActiveTask] = React.useState<TaskWithCounts | null>(null)
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
 
@@ -91,14 +94,14 @@ function ProjectDetailPage() {
     })
   }
 
-  function handleToggle(task: Task) {
+  function handleToggle(task: Task | TaskWithCounts) {
     updateTask.mutate({
       id: task.id,
       data: { status: task.status === 'done' ? 'todo' : 'done' },
     })
   }
 
-  function handleTaskClick(task: Task) {
+  function handleTaskClick(task: Task | TaskWithCounts) {
     setSelectedTaskId(task.id)
     setDetailOpen(true)
   }
@@ -120,7 +123,7 @@ function ProjectDetailPage() {
     const reordered = arrayMove(filteredTasks, oldIndex, newIndex)
 
     // Optimistic update
-    queryClient.setQueryData(taskKeys.byProject(projectId), (old: Task[] | undefined) => {
+    queryClient.setQueryData(taskKeys.byProject(projectId), (old: TaskWithCounts[] | undefined) => {
       if (!old) return old
       const reorderedIds = reordered.map((t) => t.id)
       const updated = old.map((t) => {
@@ -231,18 +234,22 @@ function ProjectDetailPage() {
             ))}
           </div>
         ) : tasks.length === 0 ? (
-          <div className="mt-8 text-center">
+          <div className="mt-8">
             <QuickAddTask projectId={projectId} />
-            <p className="text-text-muted mt-4">
-              Nenhuma tarefa ainda. Crie a primeira!
-            </p>
+            <EmptyState
+              icon={<IllustrationTasks />}
+              title="Nenhuma tarefa ainda"
+              description="Adicione tarefas para começar a organizar este projeto."
+            />
           </div>
         ) : filteredTasks.length === 0 ? (
-          <div className="mt-8 text-center">
+          <div className="mt-8">
             <QuickAddTask projectId={projectId} />
-            <p className="text-text-muted mt-4">
-              Nenhuma tarefa encontrada.
-            </p>
+            <EmptyState
+              icon={<IllustrationSearch />}
+              title="Nenhum resultado"
+              description={`Nenhuma tarefa encontrada para "${search}".`}
+            />
           </div>
         ) : currentView === 'list' ? (
           <>

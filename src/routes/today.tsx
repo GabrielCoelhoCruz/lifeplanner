@@ -3,6 +3,8 @@ import { CalendarBlank, Warning, Clock } from '@phosphor-icons/react'
 import { useTodayTasks, useUpcomingTasks } from '@/hooks/use-tasks'
 import { formatDatePt, isOverdue } from '@/lib/date'
 import { cn } from '@/lib/utils'
+import { EmptyState } from '@/components/empty-state'
+import { IllustrationToday } from '@/components/illustrations'
 import type { TaskWithProject } from '@/lib/api'
 
 export const Route = createFileRoute('/today')({
@@ -137,9 +139,11 @@ function TodayPage() {
               <CalendarBlank size={16} /> Hoje ({todayTasks.length})
             </h2>
             {todayTasks.length === 0 ? (
-              <p className="mt-4 text-text-muted">
-                Nenhuma tarefa para hoje. Aproveite o dia!
-              </p>
+              <EmptyState
+                icon={<IllustrationToday />}
+                title="Nada para hoje"
+                description="Nenhuma tarefa pendente. Aproveite o dia!"
+              />
             ) : (
               <div className="mt-3 space-y-0">
                 {todayTasks.map((item) => (

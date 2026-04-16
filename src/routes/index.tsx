@@ -8,6 +8,9 @@ import { SearchBar } from '@/components/search-bar'
 import { useDebounce } from '@/hooks/use-debounce'
 import { Fab } from '@/components/fab'
 import { CreateProjectDialog } from '@/components/create-project-dialog'
+import { EmptyState } from '@/components/empty-state'
+import { IllustrationProjects, IllustrationSearch } from '@/components/illustrations'
+import { Button } from '@/components/ui/button'
 import type { Project } from '@/server/db/schema'
 
 export const Route = createFileRoute('/')({
@@ -82,12 +85,25 @@ function DashboardPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="mt-16 text-center">
-          <p className="text-text-muted">
-            {search
-              ? 'Nenhum projeto encontrado.'
-              : 'Nenhum projeto ainda. Crie o primeiro!'}
-          </p>
+        <div className="mt-8">
+          {search ? (
+            <EmptyState
+              icon={<IllustrationSearch />}
+              title="Nenhum resultado"
+              description={`Nenhum projeto encontrado para "${search}".`}
+            />
+          ) : (
+            <EmptyState
+              icon={<IllustrationProjects />}
+              title="Nenhum projeto ainda"
+              description="Crie seu primeiro projeto para começar a organizar suas tarefas."
+              action={
+                <Button onClick={() => setCreateOpen(true)}>
+                  Criar primeiro projeto
+                </Button>
+              }
+            />
+          )}
         </div>
       ) : (
         <div
