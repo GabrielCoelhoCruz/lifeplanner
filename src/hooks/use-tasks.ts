@@ -7,6 +7,25 @@ export const taskKeys = {
   detail: (id: string) => ['tasks', id] as const,
 }
 
+export const viewKeys = {
+  today: ['views', 'today'] as const,
+  upcoming: ['views', 'upcoming'] as const,
+}
+
+export function useTodayTasks() {
+  return useQuery({
+    queryKey: viewKeys.today,
+    queryFn: api.views.today,
+  })
+}
+
+export function useUpcomingTasks() {
+  return useQuery({
+    queryKey: viewKeys.upcoming,
+    queryFn: api.views.upcoming,
+  })
+}
+
 export function useTasks(projectId: string) {
   return useQuery({
     queryKey: taskKeys.byProject(projectId),

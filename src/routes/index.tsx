@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { CalendarBlank } from '@phosphor-icons/react'
 import { useProjects } from '@/hooks/use-projects'
 import { useTasks } from '@/hooks/use-tasks'
 import { ProjectCard } from '@/components/project-card'
@@ -52,6 +53,16 @@ function DashboardPage() {
       <p className="mt-2 text-base text-text-secondary">
         Organize sua vida em um só lugar
       </p>
+
+      <div className="mt-4">
+        <Link
+          to="/today"
+          className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:text-accent-hover transition-colors"
+        >
+          <CalendarBlank size={18} />
+          Ver tarefas de hoje
+        </Link>
+      </div>
 
       <div className="mt-6">
         <SearchBar
