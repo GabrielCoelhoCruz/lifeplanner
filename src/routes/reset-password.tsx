@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { WarningCircle } from '@phosphor-icons/react'
 import { TaskiLogo } from '@/components/taski-logo'
+import { PasswordInput } from '@/components/password-input'
 import { authClient } from '@/lib/auth-client'
 
 export const Route = createFileRoute('/reset-password')({
@@ -77,16 +78,14 @@ function ResetPasswordPage() {
                   >
                     Nova senha
                   </label>
-                  <input
+                  <PasswordInput
                     id="reset-password"
-                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Mínimo 8 caracteres"
                     autoComplete="new-password"
                     minLength={8}
                     required
-                    className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-elevated border border-border rounded-lg outline-none transition-colors focus:border-accent"
                   />
                 </div>
 
@@ -97,16 +96,14 @@ function ResetPasswordPage() {
                   >
                     Confirme a nova senha
                   </label>
-                  <input
+                  <PasswordInput
                     id="reset-password-confirm"
-                    type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repita a senha"
                     autoComplete="new-password"
                     minLength={8}
                     required
-                    className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-elevated border border-border rounded-lg outline-none transition-colors focus:border-accent"
                   />
                 </div>
 

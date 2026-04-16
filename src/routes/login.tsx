@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { TaskiLogo } from '@/components/taski-logo'
+import { PasswordInput } from '@/components/password-input'
 import { authClient } from '@/lib/auth-client'
 
 export const Route = createFileRoute('/login')({
@@ -243,17 +244,20 @@ function LoginPage() {
               >
                 Senha
               </label>
-              <input
+              <PasswordInput
                 id="login-password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={isSignUp ? 'Mínimo 8 caracteres' : '••••••••'}
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
                 minLength={isSignUp ? 8 : undefined}
                 required
-                className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-elevated border border-border rounded-lg outline-none transition-colors focus:border-accent"
               />
+              {isSignUp && (
+                <p className="text-xs text-text-muted">
+                  Use pelo menos 8 caracteres.
+                </p>
+              )}
             </div>
 
             {!isSignUp && (

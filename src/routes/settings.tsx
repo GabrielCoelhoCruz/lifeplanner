@@ -2,6 +2,7 @@ import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { PasswordInput } from '@/components/password-input'
 import { CaretLeft, Bell, SpeakerHigh, Sun, Moon, Export, Upload } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
@@ -403,14 +404,13 @@ function ProfileSection() {
             >
               Senha atual
             </label>
-            <input
+            <PasswordInput
               id="current-password"
-              type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               autoComplete="current-password"
               required
-              className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-primary border border-border rounded-lg outline-none transition-colors focus:border-accent"
+              fieldClassName="bg-bg-primary"
             />
           </div>
 
@@ -421,16 +421,15 @@ function ProfileSection() {
             >
               Nova senha
             </label>
-            <input
+            <PasswordInput
               id="new-password"
-              type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Mínimo 8 caracteres"
               autoComplete="new-password"
               minLength={8}
               required
-              className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-primary border border-border rounded-lg outline-none transition-colors focus:border-accent"
+              fieldClassName="bg-bg-primary"
             />
           </div>
 
@@ -441,15 +440,14 @@ function ProfileSection() {
             >
               Confirmar nova senha
             </label>
-            <input
+            <PasswordInput
               id="confirm-new-password"
-              type="password"
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
               autoComplete="new-password"
               minLength={8}
               required
-              className="w-full h-11 px-3.5 text-sm text-text-primary placeholder:text-text-muted bg-bg-primary border border-border rounded-lg outline-none transition-colors focus:border-accent"
+              fieldClassName="bg-bg-primary"
             />
           </div>
 
