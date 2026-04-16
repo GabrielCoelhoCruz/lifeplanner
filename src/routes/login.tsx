@@ -70,7 +70,7 @@ function LoginPage() {
     try {
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL: `${window.location.origin}/`,
+        callbackURL: window.location.origin,
       })
     } catch (err) {
       console.error('Google sign-in error:', err)

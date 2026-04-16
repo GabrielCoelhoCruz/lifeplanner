@@ -42,11 +42,11 @@ async function handleAuthProxy(request: Request): Promise<Response> {
   const suffix = url.pathname.replace(/^\/api\/auth\/?/, '')
   const upstreamBase = AUTH_UPSTREAM.replace(/\/$/, '')
   const upstreamUrl = `${upstreamBase}/${suffix}${url.search}`
-  const upstreamOrigin = new URL(upstreamBase).origin
 
-  // Forward method + headers + body. Strip hop-by-hop headers; rewrite
-  // Origin/Referer so Better Auth's trustedOrigins check sees a same-origin
-  // call instead of our app domain (the upstream only trusts its own domain).
+  // Forward method + headers + body. Strip hop-by-hop + Vercel-injected
+  // routing headers (x-forwarded-host trips Neon's edge router). Pass the
+  // browser's real Origin through so Better Auth can trust the app domain for
+  // OAuth callbackURL validation.
   const stripHeaders = new Set([
     'host',
     'connection',
@@ -64,11 +64,8 @@ async function handleAuthProxy(request: Request): Promise<Response> {
     if (stripHeaders.has(lower)) return
     // Drop all x-vercel-* headers (platform-injected routing/tracing)
     if (lower.startsWith('x-vercel-')) return
-    if (lower === 'origin' || lower === 'referer') return
     forwardedHeaders.set(key, val)
   })
-  forwardedHeaders.set('origin', upstreamOrigin)
-  forwardedHeaders.set('referer', `${upstreamOrigin}/`)
 
   const init: RequestInit = {
     method: request.method,
