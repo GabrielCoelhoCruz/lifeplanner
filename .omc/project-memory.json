@@ -176,20 +176,20 @@
   "hotPaths": [
     {
       "path": "src\\routes\\__root.tsx",
-      "accessCount": 28,
-      "lastAccessed": 1776358665870,
+      "accessCount": 30,
+      "lastAccessed": 1776367747653,
       "type": "file"
     },
     {
       "path": "src",
-      "accessCount": 26,
-      "lastAccessed": 1776358649807,
+      "accessCount": 27,
+      "lastAccessed": 1776367536174,
       "type": "directory"
     },
     {
       "path": "src\\lib\\api.ts",
-      "accessCount": 24,
-      "lastAccessed": 1776344874104,
+      "accessCount": 25,
+      "lastAccessed": 1776367442781,
       "type": "file"
     },
     {
@@ -289,6 +289,12 @@
       "type": "file"
     },
     {
+      "path": "src\\server\\db\\index.ts",
+      "accessCount": 10,
+      "lastAccessed": 1776367638399,
+      "type": "file"
+    },
+    {
       "path": "src\\server\\routes\\projects.ts",
       "accessCount": 9,
       "lastAccessed": 1776342363870,
@@ -304,12 +310,6 @@
       "path": "src\\routes\\today.tsx",
       "accessCount": 9,
       "lastAccessed": 1776344866369,
-      "type": "file"
-    },
-    {
-      "path": "src\\server\\db\\index.ts",
-      "accessCount": 9,
-      "lastAccessed": 1776344873654,
       "type": "file"
     },
     {
