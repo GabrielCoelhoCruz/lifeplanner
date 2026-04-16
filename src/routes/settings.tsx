@@ -2,8 +2,9 @@ import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { CaretLeft, Bell, SpeakerHigh, Sun, Export, Upload } from '@phosphor-icons/react'
+import { CaretLeft, Bell, SpeakerHigh, Sun, Moon, Export, Upload } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { useTheme } from '@/lib/theme'
 import { api } from '@/lib/api'
 import { requestNotificationPermission, setNotificationSetting } from '@/lib/notifications'
 import type { Project, Task, Item } from '@/server/db/schema'
@@ -56,6 +57,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 }
 
 function SettingsPage() {
+  const { theme, toggleTheme } = useTheme()
   const [notifications, toggleNotifications] = useLocalToggle('settings:notifications', true)
   const [sounds, toggleSounds] = useLocalToggle('settings:sounds', true)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -157,13 +159,20 @@ function SettingsPage() {
 
         <div className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
-            <Sun size={20} className="text-text-secondary" />
+            {theme === 'dark' ? (
+              <Moon size={20} className="text-text-secondary" />
+            ) : (
+              <Sun size={20} className="text-text-secondary" />
+            )}
             <div>
               <p className="text-sm font-medium text-text-primary">Tema</p>
-              <p className="text-xs text-text-muted">Aparência do aplicativo</p>
+              <p className="text-xs text-text-muted">Alterne entre tema claro e escuro</p>
             </div>
           </div>
-          <span className="text-sm text-text-muted">Claro</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-text-muted">{theme === 'dark' ? 'Escuro' : 'Claro'}</span>
+            <Toggle checked={theme === 'dark'} onChange={toggleTheme} />
+          </div>
         </div>
 
         <Separator />

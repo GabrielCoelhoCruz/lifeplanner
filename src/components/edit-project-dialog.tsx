@@ -87,7 +87,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
             <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
               Cor
             </label>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2 flex flex-wrap gap-2">
               {PRESET_COLORS.map((c) => (
                 <button
                   key={c}
