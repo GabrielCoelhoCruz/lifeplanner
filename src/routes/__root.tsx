@@ -136,9 +136,9 @@ function RootLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className="min-h-screen flex flex-col bg-bg-primary">
       <Header onShowShortcuts={() => setPaletteOpen(true)} />
-      <main>
+      <main className="flex-1 overflow-y-auto">
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
