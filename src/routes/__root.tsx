@@ -124,7 +124,7 @@ function RootLayout({ children }: { children: ReactNode }) {
 
   if (isFullBleedRoute) {
     return (
-      <div className="min-h-screen bg-bg-primary">
+      <div className="min-h-dvh bg-bg-primary">
         <ErrorBoundary>{children}</ErrorBoundary>
       </div>
     )
@@ -132,11 +132,11 @@ function RootLayout({ children }: { children: ReactNode }) {
 
   // Show nothing while checking session or while redirecting
   if (isPending || !session) {
-    return <div className="min-h-screen bg-bg-primary" />
+    return <div className="min-h-dvh bg-bg-primary" />
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg-primary">
+    <div className="min-h-dvh flex flex-col bg-bg-primary">
       <Header onShowShortcuts={() => setPaletteOpen(true)} />
       <main className="flex-1 overflow-y-auto">
         <ErrorBoundary>{children}</ErrorBoundary>
