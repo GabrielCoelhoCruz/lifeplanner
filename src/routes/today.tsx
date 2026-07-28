@@ -1,8 +1,13 @@
 import * as React from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { CalendarBlank, Warning, Clock, Circle, CheckCircle } from '@phosphor-icons/react'
 import { useTodayTasks, useUpcomingTasks, useUpdateTask } from '@/hooks/use-tasks'
 import { useContexts } from '@/hooks/use-contexts'
+import {
+  validateContextSearch,
+  useContextFilter,
+} from '@/hooks/use-context-filter'
 import { formatDatePt, isOverdue } from '@/lib/date'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/empty-state'
@@ -12,6 +17,7 @@ import type { TaskWithProject } from '@/lib/api'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/today')({
+  validateSearch: validateContextSearch,
   component: TodayPage,
 })
 
@@ -116,7 +122,11 @@ function TodayPage() {
   const { data: todayData, isLoading: todayLoading } = useTodayTasks()
   const { data: upcomingData, isLoading: upcomingLoading } = useUpcomingTasks()
   const { data: allContexts = [] } = useContexts()
-  const [selectedContextId, setSelectedContextId] = React.useState<string | null>(null)
+
+  const search = Route.useSearch()
+  const navigate = useNavigate()
+  const { selectedContextId, setSelectedContextId } =
+    useContextFilter(search, navigate)
 
   const isLoading = todayLoading || upcomingLoading
 

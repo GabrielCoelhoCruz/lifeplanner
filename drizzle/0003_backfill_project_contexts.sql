@@ -12,51 +12,46 @@
 -- If the verify script reports zero orphans, the NOT NULL constraint on
 -- projects.context_id may be added (see comment at the bottom of this file).
 
--- 1. Normalisation helper: trim and collapse internal whitespace.
---    Empty strings (or whitespace only) → 'Pessoal'.
-WITH norm AS (
-  SELECT
-    p.user_id,
-    p.id AS project_id,
-    CASE
-      WHEN TRIM(p.context) = '' THEN 'Pessoal'
-      ELSE TRIM(REGEXP_REPLACE(p.context, '\s+', ' ', 'g'))
-    END AS name
-  FROM projects p
-  WHERE p.context_id IS NULL
-),
+BEGIN;
 
--- 2. Insert one context row per (user_id, normalized_name) that doesn't
---    already exist.  Because the unique index covers (user_id, lower(name))
---    we can use a simple anti-join to avoid conflicts.
-inserted AS (
-  INSERT INTO contexts (user_id, name, color)
-  SELECT DISTINCT
-    n.user_id,
-    n.name,
+-- 1. Insert one context row per (user_id, normalized_name) that does not
+--    already exist. The expression-index conflict target makes reruns safe.
+INSERT INTO contexts (user_id, name, color)
+SELECT DISTINCT ON (p.user_id, LOWER(normalized.name))
+    p.user_id,
+    normalized.name,
     CASE
-      WHEN LOWER(n.name) = 'learned hand' THEN '#6366F1'
-      WHEN LOWER(n.name) = 'cia'          THEN '#10B981'
-      WHEN LOWER(n.name) = 'pxg'          THEN '#F59E0B'
-      WHEN LOWER(n.name) = 'pessoal'      THEN '#8B5CF6'
+      WHEN LOWER(normalized.name) = 'learned hand' THEN '#6366F1'
+      WHEN LOWER(normalized.name) = 'cia'          THEN '#10B981'
+      WHEN LOWER(normalized.name) = 'pxg'          THEN '#F59E0B'
+      WHEN LOWER(normalized.name) = 'pessoal'      THEN '#8B5CF6'
       ELSE '#6366F1'
     END
-  FROM norm n
-  WHERE NOT EXISTS (
-    SELECT 1 FROM contexts c
-    WHERE c.user_id = n.user_id
-      AND LOWER(c.name) = LOWER(n.name)
-  )
-  RETURNING id, user_id, name
-)
+FROM projects p
+CROSS JOIN LATERAL (
+  SELECT COALESCE(
+    NULLIF(TRIM(REGEXP_REPLACE(COALESCE(p.context, ''), '\s+', ' ', 'g')), ''),
+    'Pessoal'
+  ) AS name
+) normalized
+WHERE p.context_id IS NULL
+ON CONFLICT (user_id, (LOWER(name))) DO NOTHING;
 
--- 3. Update every project row with the matching context_id.
+-- 2. Update every project row with the matching context_id. This is a separate
+--    statement so PostgreSQL can see contexts inserted above.
 UPDATE projects p
 SET context_id = c.id
-FROM norm n
-JOIN contexts c ON c.user_id = n.user_id AND LOWER(c.name) = LOWER(n.name)
-WHERE p.id = n.project_id
-  AND p.context_id IS NULL;
+FROM contexts c
+WHERE p.context_id IS NULL
+  AND c.user_id = p.user_id
+  AND LOWER(c.name) = LOWER(
+    COALESCE(
+      NULLIF(TRIM(REGEXP_REPLACE(COALESCE(p.context, ''), '\s+', ' ', 'g')), ''),
+      'Pessoal'
+    )
+  );
+
+COMMIT;
 
 -- ---------------------------------------------------------------------------
 -- After verification (npm run db:verify-contexts) has confirmed zero orphans,

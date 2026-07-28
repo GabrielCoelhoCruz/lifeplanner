@@ -4,6 +4,8 @@
 
 Taski is a fast, keyboard-first task and project planner for people who want to actually get things done — not wrestle with their tool. Organize work into projects, plan your day, run focus sessions with the built-in Pomodoro, and move through everything without ever taking your hands off the keyboard.
 
+Using Taski as a personal execution layer across multiple companies? See [Run two companies with Taski](docs/USING-TASKI-ACROSS-COMPANIES.md).
+
 <p align="center">
   <img src="public/icons/icon.svg" width="96" alt="Taski logo" />
 </p>

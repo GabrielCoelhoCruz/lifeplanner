@@ -4,13 +4,10 @@ import {
   House,
   CalendarBlank,
   Gear,
-  FolderSimple,
-  CheckSquare,
   Plus,
   MagnifyingGlass,
   Moon,
   Sun,
-  Timer,
   Keyboard,
   ArrowRight,
 } from '@phosphor-icons/react'

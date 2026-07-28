@@ -44,7 +44,6 @@ export function UserMenu() {
         aria-label="Menu do usuário"
       >
         {user.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={user.image}
             alt={user.name || 'Avatar'}
@@ -73,9 +72,19 @@ export function UserMenu() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={handleLogout}
-          disabled={loading}
-          className="text-priority-high focus:text-priority-high"
+          role="menuitem"
+          tabIndex={loading ? -1 : 0}
+          aria-disabled={loading}
+          onClick={() => {
+            if (!loading) void handleLogout()
+          }}
+          onKeyDown={(event) => {
+            if (!loading && (event.key === 'Enter' || event.key === ' ')) {
+              event.preventDefault()
+              void handleLogout()
+            }
+          }}
+          className="text-priority-high focus:text-priority-high aria-disabled:pointer-events-none aria-disabled:opacity-60"
         >
           <SignOut size={16} className="mr-2" />
           {loading ? 'Saindo...' : 'Sair'}
@@ -84,4 +93,3 @@ export function UserMenu() {
     </DropdownMenu>
   )
 }
-

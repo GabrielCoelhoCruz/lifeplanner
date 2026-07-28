@@ -25,7 +25,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // On mount, read the real theme (set by inline script before hydration)
     const actual = (document.documentElement.getAttribute('data-theme') as Theme) || getInitialTheme()
-    setThemeState(actual)
+    const frameId = window.requestAnimationFrame(() => setThemeState(actual))
+    return () => window.cancelAnimationFrame(frameId)
   }, [])
 
   useEffect(() => {

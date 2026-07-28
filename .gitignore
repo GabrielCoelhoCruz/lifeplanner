@@ -28,6 +28,10 @@ dist-ssr
 .output
 .env.vercel
 
+# Tool / IDE artifacts
+.omc/
+.hermes/
+
 # Test artifacts
 test-results/
 playwright-report/

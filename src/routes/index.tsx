@@ -1,12 +1,16 @@
-import * as React from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { useMemo, useState } from 'react'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { CalendarBlank } from '@phosphor-icons/react'
 import { useProjects } from '@/hooks/use-projects'
 import { useTasks } from '@/hooks/use-tasks'
 import { useContexts } from '@/hooks/use-contexts'
+import { useDebounce } from '@/hooks/use-debounce'
+import {
+  validateContextSearch,
+  useContextFilter,
+} from '@/hooks/use-context-filter'
 import { ProjectCard } from '@/components/project-card'
 import { SearchBar } from '@/components/search-bar'
-import { useDebounce } from '@/hooks/use-debounce'
 import { Fab } from '@/components/fab'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { CreateProjectDialog } from '@/components/create-project-dialog'
@@ -16,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import type { ProjectWithContext } from '@/server/functions/projects'
 
 export const Route = createFileRoute('/')({
+  validateSearch: validateContextSearch,
   component: DashboardPage,
 })
 
@@ -42,10 +47,14 @@ interface ContextInfo {
 function DashboardPage() {
   const { data: projects, isLoading } = useProjects()
   const { data: allContexts = [] } = useContexts()
-  const [search, setSearch] = React.useState('')
-  const [selectedContextId, setSelectedContextId] = React.useState<string | null>(null)
-  const debouncedSearch = useDebounce(search, 300)
-  const [createOpen, setCreateOpen] = React.useState(false)
+  const [searchText, setSearchText] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
+  const debouncedSearch = useDebounce(searchText, 300)
+
+  const search = Route.useSearch()
+  const navigate = useNavigate()
+  const { selectedContextId, setSelectedContextId } =
+    useContextFilter(search, navigate)
 
   useKeyboardShortcuts({
     onNewProject: () => setCreateOpen(true),
@@ -53,13 +62,13 @@ function DashboardPage() {
   })
 
   // Build a lookup map and a list of contexts that are actually in use
-  const contextMap = React.useMemo(() => {
+  const contextMap = useMemo(() => {
     const map = new Map<string, ContextInfo>()
     for (const c of allContexts) map.set(c.id, { id: c.id, name: c.name, color: c.color })
     return map
   }, [allContexts])
 
-  const usedContexts = React.useMemo(() => {
+  const usedContexts = useMemo(() => {
     const ids = new Set<string>()
     for (const p of projects ?? []) if (p.contextId) ids.add(p.contextId)
     return Array.from(ids)
@@ -68,7 +77,7 @@ function DashboardPage() {
       .sort((a, b) => a.name.localeCompare(b.name))
   }, [projects, contextMap])
 
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     if (!projects) return []
     const q = debouncedSearch.toLowerCase()
     return projects.filter(
@@ -81,7 +90,7 @@ function DashboardPage() {
     )
   }, [projects, debouncedSearch, selectedContextId])
 
-  const groupedProjects = React.useMemo(() => {
+  const groupedProjects = useMemo(() => {
     const groups: { context: ContextInfo; projects: ProjectWithContext[] }[] = []
     for (const ctx of usedContexts) {
       const groupProjects = filtered.filter((p) => p.contextId === ctx.id)
@@ -121,8 +130,8 @@ function DashboardPage() {
 
       <div className="mt-6">
         <SearchBar
-          value={search}
-          onChange={setSearch}
+          value={searchText}
+          onChange={setSearchText}
           placeholder="Buscar projetos..."
         />
       </div>
@@ -164,11 +173,11 @@ function DashboardPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="mt-8">
-          {search ? (
+          {searchText ? (
             <EmptyState
               icon={<IllustrationSearch />}
               title="Nenhum resultado"
-              description={`Nenhum projeto encontrado para "${search}".`}
+              description={`Nenhum projeto encontrado para "${searchText}".`}
             />
           ) : (
             <EmptyState

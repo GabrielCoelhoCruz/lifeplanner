@@ -23,6 +23,14 @@ import { CommandPalette } from '@/components/command-palette'
 import { PomodoroBar } from '@/components/pomodoro-bar'
 import appCss from '@/index.css?url'
 
+const E2E_SESSION = {
+  user: {
+    id: 'e2e-user',
+    email: 'playwright@taski.test',
+    name: 'Playwright User',
+  },
+}
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -38,6 +46,9 @@ export const Route = createRootRoute({
       { rel: 'manifest', href: '/manifest.webmanifest' },
     ],
     scripts: [
+      {
+        children: `(function(){var w=window;if(w&&w.location&&w.localStorage){var c=new URL(w.location.href).searchParams.get('context');if(c)try{w.localStorage.setItem('selectedContextId',c)}catch(e){}}})()`,
+      },
       {
         children: `(function(){var t=localStorage.getItem('settings:theme');if(!t){t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)})();(function(){if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})}).catch(function(){});if(window.caches&&caches.keys){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})}).catch(function(){})}}})()`,
       },
@@ -89,7 +100,11 @@ function RootLayout({ children }: { children: ReactNode }) {
   const isFullBleedRoute = pathname === '/login'
 
   // Session guard: redirect unauthenticated users to /login
-  const { data: session, isPending } = authClient.useSession()
+  const authSession = authClient.useSession()
+  const e2eAuthBypass =
+    import.meta.env.DEV && import.meta.env.VITE_E2E_AUTH_BYPASS === '1'
+  const session = e2eAuthBypass ? E2E_SESSION : authSession.data
+  const isPending = e2eAuthBypass ? false : authSession.isPending
   useEffect(() => {
     if (isPending) return
     if (!session && !isFullBleedRoute) {

@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
 import { tasks, items, projects } from '../db/schema'
-import { eq, and, asc, sql, inArray, count } from 'drizzle-orm'
+import { eq, and, asc, sql, inArray, count, ne } from 'drizzle-orm'
 import { requireUser, type AuthUser } from '../auth'
 
 function calculateNextDueDate(
@@ -34,6 +34,98 @@ function calculateNextDueDate(
     }
   }
   return base
+}
+
+async function persistTaskUpdate(
+  id: string,
+  updates: Record<string, unknown>,
+) {
+  if (updates.status !== 'done') {
+    const [updatedTask] = await db
+      .update(tasks)
+      .set(updates)
+      .where(eq(tasks.id, id))
+      .returning()
+    return updatedTask
+  }
+
+  const [currentTask] = await db
+    .select()
+    .from(tasks)
+    .where(eq(tasks.id, id))
+
+  if (!currentTask) return undefined
+
+  const completionMarker = new Date()
+  const completionUpdates = { ...updates, updatedAt: completionMarker }
+  const completedTaskQuery = db
+    .update(tasks)
+    .set(completionUpdates)
+    .where(and(eq(tasks.id, id), ne(tasks.status, 'done')))
+    .returning()
+
+  const recurrence =
+    typeof updates.recurrence === 'string'
+      ? updates.recurrence as typeof currentTask.recurrence
+      : currentTask.recurrence
+  const recurrenceDays =
+    typeof updates.recurrenceDays === 'string' || updates.recurrenceDays === null
+      ? updates.recurrenceDays
+      : currentTask.recurrenceDays
+  const currentDueDate =
+    updates.dueDate instanceof Date || updates.dueDate === null
+      ? updates.dueDate
+      : currentTask.dueDate
+  const dueDate = calculateNextDueDate(
+    currentDueDate,
+    recurrence,
+    recurrenceDays,
+  )
+  const createSuccessorQuery = db.execute(sql`
+    insert into ${tasks} (
+      ${tasks.projectId},
+      ${tasks.title},
+      ${tasks.description},
+      ${tasks.priority},
+      ${tasks.status},
+      ${tasks.dueDate},
+      ${tasks.position},
+      ${tasks.recurrence},
+      ${tasks.recurrenceDays}
+    )
+    select
+      ${tasks.projectId},
+      ${tasks.title},
+      ${tasks.description},
+      ${tasks.priority},
+      'todo',
+      ${dueDate},
+      ${tasks.position},
+      ${tasks.recurrence},
+      ${tasks.recurrenceDays}
+    from ${tasks}
+    where
+      ${tasks.id} = ${id}
+      and ${tasks.updatedAt} = ${completionMarker}
+      and ${tasks.status} = 'done'
+      and ${tasks.recurrence} <> 'none'
+  `)
+
+  const [completedTasks] = await db.batch([
+    completedTaskQuery,
+    createSuccessorQuery,
+  ])
+  const completedTask = completedTasks[0]
+  if (completedTask) return completedTask
+
+  const remainingUpdates = { ...updates }
+  delete remainingUpdates.status
+  const [alreadyCompletedTask] = await db
+    .update(tasks)
+    .set(remainingUpdates)
+    .where(eq(tasks.id, id))
+    .returning()
+  return alreadyCompletedTask
 }
 
 async function assertProjectOwned(projectId: string, user: AuthUser) {
@@ -178,35 +270,8 @@ export const updateTask = createServerFn({ method: 'POST' })
     if (fields.recurrenceDays !== undefined)
       updates.recurrenceDays = fields.recurrenceDays
 
-    const [result] = await db
-      .update(tasks)
-      .set(updates)
-      .where(eq(tasks.id, id))
-      .returning()
+    const result = await persistTaskUpdate(id, updates)
     if (!result) throw new Error('Task not found')
-
-    if (
-      updates.status === 'done' &&
-      result.recurrence &&
-      result.recurrence !== 'none'
-    ) {
-      const nextDueDate = calculateNextDueDate(
-        result.dueDate,
-        result.recurrence,
-        result.recurrenceDays,
-      )
-      await db.insert(tasks).values({
-        projectId: result.projectId,
-        title: result.title,
-        description: result.description,
-        priority: result.priority,
-        status: 'todo',
-        dueDate: nextDueDate,
-        position: result.position,
-        recurrence: result.recurrence,
-        recurrenceDays: result.recurrenceDays,
-      })
-    }
 
     return result
   })
@@ -245,7 +310,7 @@ export const reorderTasks = createServerFn({ method: 'POST' })
       data.items.map((item) => {
         const updates: Record<string, unknown> = { position: item.position }
         if (item.status) updates.status = item.status
-        return db.update(tasks).set(updates).where(eq(tasks.id, item.id))
+        return persistTaskUpdate(item.id, updates)
       }),
     )
     return { success: true }

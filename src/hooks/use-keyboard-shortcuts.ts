@@ -14,7 +14,10 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers = {}) {
   const pendingPrefix = useRef<string | null>(null)
   const prefixTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const handlersRef = useRef(handlers)
-  handlersRef.current = handlers
+
+  useEffect(() => {
+    handlersRef.current = handlers
+  }, [handlers])
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
