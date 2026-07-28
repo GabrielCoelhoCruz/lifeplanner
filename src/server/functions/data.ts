@@ -1,12 +1,21 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
-import { projects, tasks, items } from '../db/schema'
-import { eq, inArray, asc } from 'drizzle-orm'
+import { contexts, projects, tasks, items } from '../db/schema'
+import { and, asc, eq, inArray, sql } from 'drizzle-orm'
+import type { BatchItem } from 'drizzle-orm/batch'
+import { randomUUID } from 'node:crypto'
 import { requireUser } from '../auth'
+import { planDataImport } from './data-mapping'
 
 export const exportAllData = createServerFn({ method: 'GET' }).handler(
   async () => {
     const user = await requireUser()
+
+    const allContexts = await db
+      .select()
+      .from(contexts)
+      .where(eq(contexts.userId, user.id))
+      .orderBy(asc(contexts.position))
 
     const allProjects = await db
       .select()
@@ -14,7 +23,7 @@ export const exportAllData = createServerFn({ method: 'GET' }).handler(
       .where(eq(projects.userId, user.id))
       .orderBy(asc(projects.position))
 
-    const projectIds = allProjects.map((p) => p.id)
+    const projectIds = allProjects.map((project) => project.id)
     const allTasks =
       projectIds.length > 0
         ? await db
@@ -24,7 +33,7 @@ export const exportAllData = createServerFn({ method: 'GET' }).handler(
             .orderBy(asc(tasks.position))
         : []
 
-    const taskIds = allTasks.map((t) => t.id)
+    const taskIds = allTasks.map((task) => task.id)
     const allItems =
       taskIds.length > 0
         ? await db
@@ -34,13 +43,19 @@ export const exportAllData = createServerFn({ method: 'GET' }).handler(
             .orderBy(asc(items.position))
         : []
 
-    return { projects: allProjects, tasks: allTasks, items: allItems }
+    return {
+      contexts: allContexts,
+      projects: allProjects,
+      tasks: allTasks,
+      items: allItems,
+    }
   },
 )
 
 export const importAllData = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
+      contexts?: Array<Record<string, unknown>>
       projects: Array<Record<string, unknown>>
       tasks?: Array<Record<string, unknown>>
       items?: Array<Record<string, unknown>>
@@ -48,95 +63,146 @@ export const importAllData = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const user = await requireUser()
-    const importProjects = data.projects
     const importTasks = data.tasks
     const importItems = data.items
+    const importPlan = planDataImport({
+      contexts: data.contexts,
+      projects: data.projects,
+    })
 
-    if (!Array.isArray(importProjects)) {
-      throw new Error('Formato inválido')
-    }
-
+    const contextIdByKey = new Map<string, string>()
     const projectIdMap = new Map<string, string>()
     const taskIdMap = new Map<string, string>()
+    const operations: BatchItem<'pg'>[] = []
 
-    for (const p of importProjects) {
-      const [created] = await db
-        .insert(projects)
-        .values({
+    for (const context of importPlan.contexts) {
+      const [existing] = await db
+        .select({ id: contexts.id })
+        .from(contexts)
+        .where(
+          and(
+            eq(contexts.userId, user.id),
+            sql`lower(${contexts.name}) = ${context.key}`,
+          ),
+        )
+
+      if (existing) {
+        contextIdByKey.set(context.key, existing.id)
+        continue
+      }
+
+      const id = randomUUID()
+      operations.push(
+        db.insert(contexts).values({
+          id,
           userId: user.id,
-          name: p.name as string,
-          description: (p.description as string) || '',
-          color: (p.color as string) || '#6366F1',
-          position: (p.position as number) || 0,
-        })
-        .returning()
-      projectIdMap.set(p.id as string, created.id)
+          name: context.name,
+          description: context.description,
+          color: context.color,
+          icon: context.icon,
+          position: context.position,
+        }),
+      )
+      contextIdByKey.set(context.key, id)
+    }
+
+    for (const project of importPlan.projects) {
+      const contextId = contextIdByKey.get(project.contextKey)
+      if (!contextId) throw new Error('Contexto inválido no arquivo de importação')
+
+      const id = randomUUID()
+      operations.push(
+        db.insert(projects).values({
+          id,
+          userId: user.id,
+          name: project.name,
+          description: project.description,
+          contextId,
+          color: project.color,
+          position: project.position,
+        }),
+      )
+      projectIdMap.set(project.sourceId, id)
     }
 
     if (Array.isArray(importTasks)) {
-      for (const t of importTasks) {
+      for (const task of importTasks) {
         const newProjectId = projectIdMap.get(
-          (t.projectId as string) || (t.project_id as string),
+          (task.projectId as string) || (task.project_id as string),
         )
         if (!newProjectId) continue
-        const [created] = await db
-          .insert(tasks)
-          .values({
+        const id = randomUUID()
+        operations.push(
+          db.insert(tasks).values({
+            id,
             projectId: newProjectId,
-            title: t.title as string,
-            description: (t.description as string) || '',
-            priority: (t.priority as 'high' | 'medium' | 'low') || 'medium',
-            status: (t.status as 'todo' | 'in_progress' | 'done') || 'todo',
+            title: task.title as string,
+            description: (task.description as string) || '',
+            priority:
+              (task.priority as 'high' | 'medium' | 'low') || 'medium',
+            status:
+              (task.status as 'todo' | 'in_progress' | 'done') || 'todo',
             dueDate:
-              (t.dueDate as string) || (t.due_date as string)
-                ? new Date((t.dueDate as string) || (t.due_date as string))
+              (task.dueDate as string) || (task.due_date as string)
+                ? new Date(
+                    (task.dueDate as string) || (task.due_date as string),
+                  )
                 : null,
             recurrence:
-              (t.recurrence as
+              (task.recurrence as
                 | 'daily'
                 | 'weekly'
                 | 'monthly'
                 | 'weekdays'
                 | 'none') || 'none',
             recurrenceDays:
-              (t.recurrenceDays as string) ||
-              (t.recurrence_days as string) ||
+              (task.recurrenceDays as string) ||
+              (task.recurrence_days as string) ||
               null,
-            position: (t.position as number) || 0,
-          })
-          .returning()
-        taskIdMap.set(t.id as string, created.id)
+            position: (task.position as number) || 0,
+          }),
+        )
+        taskIdMap.set(task.id as string, id)
       }
     }
 
     if (Array.isArray(importItems)) {
-      for (const i of importItems) {
+      for (const item of importItems) {
         const newTaskId = taskIdMap.get(
-          (i.taskId as string) || (i.task_id as string),
+          (item.taskId as string) || (item.task_id as string),
         )
         if (!newTaskId) continue
-        await db.insert(items).values({
-          taskId: newTaskId,
-          title: i.title as string,
-          description: (i.description as string) || '',
-          isCompleted:
-            (i.isCompleted as boolean) ||
-            (i.is_completed as boolean) ||
-            false,
-          position: (i.position as number) || 0,
-        })
+        operations.push(
+          db.insert(items).values({
+            taskId: newTaskId,
+            title: item.title as string,
+            description: (item.description as string) || '',
+            isCompleted:
+              (item.isCompleted as boolean) ||
+              (item.is_completed as boolean) ||
+              false,
+            position: (item.position as number) || 0,
+          }),
+        )
       }
+    }
+
+    if (operations.length > 0) {
+      await db.batch(
+        operations as [BatchItem<'pg'>, ...BatchItem<'pg'>[]],
+      )
     }
 
     return {
       success: true,
       imported: {
+        contexts: contextIdByKey.size,
         projects: projectIdMap.size,
         tasks: taskIdMap.size,
         items: importItems
-          ? importItems.filter((i) =>
+          ? importItems.filter((item) =>
               taskIdMap.has(
-                (i.taskId as string) || (i.task_id as string) || '',
+                (item.taskId as string) || (item.task_id as string) || '',
               ),
             ).length
           : 0,

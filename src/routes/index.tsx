@@ -13,13 +13,13 @@ import { CreateProjectDialog } from '@/components/create-project-dialog'
 import { EmptyState } from '@/components/empty-state'
 import { IllustrationProjects, IllustrationSearch } from '@/components/illustrations'
 import { Button } from '@/components/ui/button'
-import type { Project } from '@/server/db/schema'
+import type { ProjectWithContext } from '@/server/functions/projects'
 
 export const Route = createFileRoute('/')({
   component: DashboardPage,
 })
 
-function ProjectCardWithCounts({ project }: { project: Project }) {
+function ProjectCardWithCounts({ project }: { project: ProjectWithContext }) {
   const { data: tasks = [] } = useTasks(project.id)
   const pendingCount = tasks.filter((t) => t.status !== 'done').length
   const doneCount = tasks.filter((t) => t.status === 'done').length
@@ -76,13 +76,13 @@ function DashboardPage() {
         (!selectedContextId || p.contextId === selectedContextId) &&
         (!q.trim() ||
           p.name.toLowerCase().includes(q) ||
-          (p.context ?? '').toLowerCase().includes(q) ||
+          p.contextName.toLowerCase().includes(q) ||
           (p.description ?? '').toLowerCase().includes(q)),
     )
   }, [projects, debouncedSearch, selectedContextId])
 
   const groupedProjects = React.useMemo(() => {
-    const groups: { context: ContextInfo; projects: Project[] }[] = []
+    const groups: { context: ContextInfo; projects: ProjectWithContext[] }[] = []
     for (const ctx of usedContexts) {
       const groupProjects = filtered.filter((p) => p.contextId === ctx.id)
       if (groupProjects.length > 0) {

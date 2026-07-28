@@ -1,8 +1,8 @@
-import type { Project } from '@/server/db/schema'
+import type { ProjectWithContext } from '@/server/functions/projects'
 import { useNavigate } from '@tanstack/react-router'
 
 interface ProjectCardProps {
-  project: Project
+  project: ProjectWithContext
   pendingCount: number
   doneCount: number
 }
@@ -21,6 +21,9 @@ export function ProjectCard({ project, pendingCount, doneCount }: ProjectCardPro
         style={{ backgroundColor: project.color ?? '#6366F1' }}
       />
       <div className="p-5">
+        <span className="inline-flex rounded-full bg-bg-secondary px-2 py-1 text-[11px] font-medium text-text-muted">
+          {project.contextName}
+        </span>
         <h3 className="text-xl font-normal text-text-primary truncate">
           {project.name}
         </h3>

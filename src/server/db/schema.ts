@@ -41,10 +41,9 @@ export const projects = pgTable('projects', {
   userId: text('user_id').notNull(),
   name: text('name').notNull(),
   description: text('description').default(''),
-  context: text('context').default('Pessoal').notNull(),
   contextId: uuid('context_id').references(() => contexts.id, {
     onDelete: 'restrict',
-  }),
+  }).notNull(),
   color: text('color').default('#6366F1'),
   position: integer('position').default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),

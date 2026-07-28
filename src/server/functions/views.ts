@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
-import { tasks, projects } from '../db/schema'
+import { tasks, projects, contexts } from '../db/schema'
 import { eq, lte, gte, and, ne, asc, sql } from 'drizzle-orm'
 import { requireUser } from '../auth'
 
@@ -16,11 +16,12 @@ export const getTodayTasks = createServerFn({ method: 'GET' }).handler(
         task: tasks,
         projectName: projects.name,
         projectColor: projects.color,
-        projectContext: projects.context,
+        projectContext: contexts.name,
         projectContextId: projects.contextId,
       })
       .from(tasks)
       .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .innerJoin(contexts, eq(projects.contextId, contexts.id))
       .where(
         and(
           eq(projects.userId, user.id),
@@ -52,11 +53,12 @@ export const getUpcomingTasks = createServerFn({ method: 'GET' }).handler(
         task: tasks,
         projectName: projects.name,
         projectColor: projects.color,
-        projectContext: projects.context,
+        projectContext: contexts.name,
         projectContextId: projects.contextId,
       })
       .from(tasks)
       .innerJoin(projects, eq(tasks.projectId, projects.id))
+      .innerJoin(contexts, eq(projects.contextId, contexts.id))
       .where(
         and(
           eq(projects.userId, user.id),

@@ -94,8 +94,7 @@ export const api = {
         data: {
           name: data.name!,
           description: nu(data.description),
-          contextId: nu(data.contextId),
-          context: nu(data.context),
+          contextId: data.contextId!,
           color: nu(data.color),
         },
       }),
@@ -106,7 +105,6 @@ export const api = {
           name: data.name ?? undefined,
           description: nu(data.description),
           contextId: nu(data.contextId),
-          context: nu(data.context),
           color: nu(data.color),
           position: nu(data.position),
         },
@@ -187,12 +185,14 @@ export const api = {
   data: {
     exportAll: () => exportAllData(),
     importAll: (data: {
+      contexts?: unknown[]
       projects: unknown[]
       tasks?: unknown[]
       items?: unknown[]
     }) =>
       importAllData({
         data: {
+          contexts: data.contexts as Array<Record<string, unknown>> | undefined,
           projects: data.projects as Array<Record<string, unknown>>,
           tasks: data.tasks as Array<Record<string, unknown>> | undefined,
           items: data.items as Array<Record<string, unknown>> | undefined,

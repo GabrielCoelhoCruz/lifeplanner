@@ -44,7 +44,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim() || !contextId) return
     updateProject.mutate(
       { id: project.id, data: { name: name.trim(), description, contextId, color } },
       {
@@ -128,7 +128,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={!name.trim()}>
+            <Button type="submit" disabled={!name.trim() || !contextId}>
               Salvar
             </Button>
           </DialogFooter>

@@ -33,7 +33,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim() || !contextId) return
     createProject.mutate(
       { name: name.trim(), description, contextId, color },
       {
@@ -124,7 +124,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={!name.trim()}>
+            <Button type="submit" disabled={!name.trim() || !contextId}>
               Criar projeto
             </Button>
           </DialogFooter>

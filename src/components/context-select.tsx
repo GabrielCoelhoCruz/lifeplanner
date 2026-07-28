@@ -19,6 +19,10 @@ export function ContextSelect({
 
   const selected = contexts.find((c) => c.id === value)
 
+  React.useEffect(() => {
+    if (!value && contexts.length > 0) onChange(contexts[0].id)
+  }, [contexts, onChange, value])
+
   // Close on outside click
   React.useEffect(() => {
     function handleClick(e: MouseEvent) {
