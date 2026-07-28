@@ -1,8 +1,20 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '../db'
-import { projects } from '../db/schema'
+import { projects, contexts } from '../db/schema'
 import { eq, and, asc } from 'drizzle-orm'
-import { requireUser } from '../auth'
+import { requireUser, type AuthUser } from '../auth'
+
+async function assertContextOwned(
+  contextId: string,
+  user: AuthUser,
+): Promise<{ id: string; name: string }> {
+  const [ctx] = await db
+    .select({ id: contexts.id, name: contexts.name })
+    .from(contexts)
+    .where(and(eq(contexts.id, contextId), eq(contexts.userId, user.id)))
+  if (!ctx) throw new Error('Context not found')
+  return ctx
+}
 
 export const listProjects = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -29,17 +41,35 @@ export const getProject = createServerFn({ method: 'GET' })
 
 export const createProject = createServerFn({ method: 'POST' })
   .inputValidator(
-    (data: { name: string; description?: string; color?: string }) => data,
+    (data: {
+      name: string
+      description?: string
+      contextId?: string
+      context?: string
+      color?: string
+    }) => data,
   )
   .handler(async ({ data }) => {
     const user = await requireUser()
     if (!data.name?.trim()) throw new Error('Nome é obrigatório')
+
+    let contextName = data.context?.trim() || 'Pessoal'
+
+    // If contextId is provided, resolve it to the context name for the legacy
+    // column. This is the preferred path in the new UI.
+    if (data.contextId) {
+      const ctx = await assertContextOwned(data.contextId, user)
+      contextName = ctx.name
+    }
+
     const [result] = await db
       .insert(projects)
       .values({
         userId: user.id,
         name: data.name.trim(),
         description: data.description || '',
+        contextId: data.contextId || null,
+        context: contextName,
         color: data.color || '#6366F1',
       })
       .returning()
@@ -52,6 +82,8 @@ export const updateProject = createServerFn({ method: 'POST' })
       id: string
       name?: string
       description?: string
+      contextId?: string
+      context?: string
       color?: string
       position?: number
     }) => data,
@@ -62,8 +94,17 @@ export const updateProject = createServerFn({ method: 'POST' })
     const updates: Record<string, unknown> = { updatedAt: new Date() }
     if (fields.name !== undefined) updates.name = fields.name.trim()
     if (fields.description !== undefined) updates.description = fields.description
-    if (fields.color !== undefined) updates.color = fields.color
     if (fields.position !== undefined) updates.position = fields.position
+    if (fields.color !== undefined) updates.color = fields.color
+
+    if (fields.contextId !== undefined) {
+      const ctx = await assertContextOwned(fields.contextId, user)
+      updates.contextId = ctx.id
+      updates.context = ctx.name
+    } else if (fields.context !== undefined) {
+      updates.context = fields.context.trim() || 'Pessoal'
+      updates.contextId = null
+    }
 
     const [result] = await db
       .update(projects)

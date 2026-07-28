@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { CalendarBlank } from '@phosphor-icons/react'
 import { useProjects } from '@/hooks/use-projects'
 import { useTasks } from '@/hooks/use-tasks'
+import { useContexts } from '@/hooks/use-contexts'
 import { ProjectCard } from '@/components/project-card'
 import { SearchBar } from '@/components/search-bar'
 import { useDebounce } from '@/hooks/use-debounce'
@@ -32,9 +33,17 @@ function ProjectCardWithCounts({ project }: { project: Project }) {
   )
 }
 
+interface ContextInfo {
+  id: string
+  name: string
+  color: string
+}
+
 function DashboardPage() {
   const { data: projects, isLoading } = useProjects()
+  const { data: allContexts = [] } = useContexts()
   const [search, setSearch] = React.useState('')
+  const [selectedContextId, setSelectedContextId] = React.useState<string | null>(null)
   const debouncedSearch = useDebounce(search, 300)
   const [createOpen, setCreateOpen] = React.useState(false)
 
@@ -43,16 +52,53 @@ function DashboardPage() {
     onFocusSearch: () => document.getElementById('search-input')?.focus(),
   })
 
+  // Build a lookup map and a list of contexts that are actually in use
+  const contextMap = React.useMemo(() => {
+    const map = new Map<string, ContextInfo>()
+    for (const c of allContexts) map.set(c.id, { id: c.id, name: c.name, color: c.color })
+    return map
+  }, [allContexts])
+
+  const usedContexts = React.useMemo(() => {
+    const ids = new Set<string>()
+    for (const p of projects ?? []) if (p.contextId) ids.add(p.contextId)
+    return Array.from(ids)
+      .map((id) => contextMap.get(id)!)
+      .filter(Boolean)
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [projects, contextMap])
+
   const filtered = React.useMemo(() => {
     if (!projects) return []
-    if (!debouncedSearch.trim()) return projects
     const q = debouncedSearch.toLowerCase()
     return projects.filter(
       (p) =>
-        p.name.toLowerCase().includes(q) ||
-        (p.description ?? '').toLowerCase().includes(q)
+        (!selectedContextId || p.contextId === selectedContextId) &&
+        (!q.trim() ||
+          p.name.toLowerCase().includes(q) ||
+          (p.context ?? '').toLowerCase().includes(q) ||
+          (p.description ?? '').toLowerCase().includes(q)),
     )
-  }, [projects, debouncedSearch])
+  }, [projects, debouncedSearch, selectedContextId])
+
+  const groupedProjects = React.useMemo(() => {
+    const groups: { context: ContextInfo; projects: Project[] }[] = []
+    for (const ctx of usedContexts) {
+      const groupProjects = filtered.filter((p) => p.contextId === ctx.id)
+      if (groupProjects.length > 0) {
+        groups.push({ context: ctx, projects: groupProjects })
+      }
+    }
+    // Projects with no contextId go into an "Other" group
+    const noContext = filtered.filter((p) => !p.contextId)
+    if (noContext.length > 0) {
+      groups.push({
+        context: { id: '', name: 'Outros', color: '#9CA3AF' },
+        projects: noContext,
+      })
+    }
+    return groups
+  }, [usedContexts, filtered])
 
   return (
     <div className="max-w-7xl mx-auto px-5 py-7 md:px-16 md:py-12 animate-fade-in-up">
@@ -79,6 +125,32 @@ function DashboardPage() {
           onChange={setSearch}
           placeholder="Buscar projetos..."
         />
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2" aria-label="Filtrar por empresa ou contexto">
+        <Button
+          type="button"
+          variant={selectedContextId === null ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setSelectedContextId(null)}
+        >
+          Todos
+        </Button>
+        {usedContexts.map((ctx) => (
+          <Button
+            key={ctx.id}
+            type="button"
+            variant={selectedContextId === ctx.id ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedContextId(ctx.id)}
+            className="flex items-center gap-1.5"
+          >
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{ backgroundColor: ctx.color }}
+            />
+            {ctx.name}
+          </Button>
+        ))}
       </div>
 
       {isLoading ? (
@@ -112,12 +184,25 @@ function DashboardPage() {
           )}
         </div>
       ) : (
-        <div
-          className="mt-8 grid gap-4 animate-stagger"
-          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
-        >
-          {filtered.map((project) => (
-            <ProjectCardWithCounts key={project.id} project={project} />
+        <div className="mt-8 space-y-8 animate-stagger">
+          {groupedProjects.map((group) => (
+            <section key={group.context.id || '_other'}>
+              <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-text-muted">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ backgroundColor: group.context.color }}
+                />
+                {group.context.name} ({group.projects.length})
+              </h2>
+              <div
+                className="mt-3 grid gap-4"
+                style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+              >
+                {group.projects.map((project) => (
+                  <ProjectCardWithCounts key={project.id} project={project} />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}

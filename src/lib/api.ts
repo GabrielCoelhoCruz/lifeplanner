@@ -52,6 +52,7 @@ export interface TaskWithProject {
   projectName: string | null
   projectColor: string | null
   projectContext: string
+  projectContextId: string | null
 }
 
 /** Convert null to undefined for server function compatibility */
@@ -93,6 +94,7 @@ export const api = {
         data: {
           name: data.name!,
           description: nu(data.description),
+          contextId: nu(data.contextId),
           context: nu(data.context),
           color: nu(data.color),
         },
@@ -103,6 +105,7 @@ export const api = {
           id,
           name: data.name ?? undefined,
           description: nu(data.description),
+          contextId: nu(data.contextId),
           context: nu(data.context),
           color: nu(data.color),
           position: nu(data.position),

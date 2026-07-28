@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useCreateProject } from '@/hooks/use-projects'
+import { ContextSelect } from '@/components/context-select'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -26,6 +27,7 @@ const PRESET_COLORS = [
 export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
   const [name, setName] = React.useState('')
   const [description, setDescription] = React.useState('')
+  const [contextId, setContextId] = React.useState<string | null>(null)
   const [color, setColor] = React.useState(PRESET_COLORS[0])
   const createProject = useCreateProject()
 
@@ -33,11 +35,12 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     e.preventDefault()
     if (!name.trim()) return
     createProject.mutate(
-      { name: name.trim(), description, color },
+      { name: name.trim(), description, contextId, color },
       {
         onSuccess: () => {
           setName('')
           setDescription('')
+          setContextId(null)
           setColor(PRESET_COLORS[0])
           onOpenChange(false)
           toast.success('Projeto criado')
@@ -45,7 +48,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
         onError: () => {
           toast.error('Erro ao criar projeto. Tente novamente.')
         },
-      }
+      },
     )
   }
 
@@ -69,6 +72,18 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
               className="mt-1"
               autoFocus
             />
+          </div>
+          <div>
+            <label htmlFor="project-context" className="text-xs font-medium text-text-muted uppercase tracking-wider">
+              Empresa ou contexto
+            </label>
+            <div className="mt-1">
+              <ContextSelect
+                value={contextId}
+                onChange={setContextId}
+                placeholder="Selecionar contexto…"
+              />
+            </div>
           </div>
           <div>
             <label htmlFor="project-description" className="text-xs font-medium text-text-muted uppercase tracking-wider">
@@ -98,7 +113,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                     'w-10 h-10 rounded-full transition-all cursor-pointer',
                     color === c
                       ? 'ring-2 ring-offset-2 ring-accent scale-110'
-                      : 'hover:scale-110'
+                      : 'hover:scale-110',
                   )}
                   style={{ backgroundColor: c }}
                 />

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ContextSelect } from '@/components/context-select'
 import { useUpdateProject } from '@/hooks/use-projects'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -28,6 +29,7 @@ const PRESET_COLORS = [
 export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDialogProps) {
   const [name, setName] = React.useState(project.name)
   const [description, setDescription] = React.useState(project.description ?? '')
+  const [contextId, setContextId] = React.useState<string | null>(project.contextId)
   const [color, setColor] = React.useState(project.color ?? PRESET_COLORS[0])
   const updateProject = useUpdateProject()
 
@@ -35,6 +37,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
     if (open) {
       setName(project.name)
       setDescription(project.description ?? '')
+      setContextId(project.contextId)
       setColor(project.color ?? PRESET_COLORS[0])
     }
   }, [open, project])
@@ -43,7 +46,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
     e.preventDefault()
     if (!name.trim()) return
     updateProject.mutate(
-      { id: project.id, data: { name: name.trim(), description, color } },
+      { id: project.id, data: { name: name.trim(), description, contextId, color } },
       {
         onSuccess: () => {
           toast.success('Projeto atualizado')
@@ -52,7 +55,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
         onError: () => {
           toast.error('Erro ao atualizar projeto')
         },
-      }
+      },
     )
   }
 
@@ -64,6 +67,18 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
           <DialogDescription>Atualize as informações do projeto.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
+              Empresa ou contexto
+            </label>
+            <div className="mt-1">
+              <ContextSelect
+                value={contextId}
+                onChange={setContextId}
+                placeholder="Selecionar contexto…"
+              />
+            </div>
+          </div>
           <div>
             <label className="text-xs font-medium text-text-muted uppercase tracking-wider">
               Nome
@@ -102,7 +117,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
                     'w-10 h-10 rounded-full transition-all cursor-pointer',
                     color === c
                       ? 'ring-2 ring-offset-2 ring-accent scale-110'
-                      : 'hover:scale-110'
+                      : 'hover:scale-110',
                   )}
                   style={{ backgroundColor: c }}
                 />
