@@ -163,7 +163,7 @@ function TodayPage() {
   const formattedDate = formatTodayDate()
 
   return (
-    <div className="max-w-7xl mx-auto px-5 py-7 md:px-16 md:py-12 animate-fade-in-up">
+    <div className="max-w-7xl mx-auto px-5 py-7 pb-24 md:px-16 md:py-12 md:pb-32 animate-fade-in-up">
       <h1 className="text-3xl md:text-4xl font-normal text-text-primary tracking-tight">
         Hoje
       </h1>
