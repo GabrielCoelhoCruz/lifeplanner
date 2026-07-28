@@ -27,3 +27,8 @@ dist-ssr
 .vercel
 .output
 .env.vercel
+
+# Test artifacts
+test-results/
+playwright-report/
+tests/e2e/.cache/
