@@ -1,4 +1,13 @@
-import type { Project, NewProject, Task, NewTask, Item, NewItem } from '@/server/db/schema'
+import type {
+  Context,
+  NewContext,
+  Project,
+  NewProject,
+  Task,
+  NewTask,
+  Item,
+  NewItem,
+} from '@/server/db/schema'
 import {
   listProjects,
   getProject,
@@ -24,6 +33,14 @@ import {
 } from '@/server/functions/items'
 import { getTodayTasks, getUpcomingTasks } from '@/server/functions/views'
 import { exportAllData, importAllData } from '@/server/functions/data'
+import {
+  listContexts,
+  listActiveContexts,
+  getContext,
+  createContext,
+  updateContext,
+  archiveContext,
+} from '@/server/functions/contexts'
 
 export interface TaskWithCounts extends Task {
   itemCount: number
@@ -34,6 +51,7 @@ export interface TaskWithProject {
   task: Task
   projectName: string | null
   projectColor: string | null
+  projectContext: string
 }
 
 /** Convert null to undefined for server function compatibility */
@@ -42,6 +60,31 @@ function nu<T>(v: T | null | undefined): T | undefined {
 }
 
 export const api = {
+  contexts: {
+    list: () => listContexts(),
+    listActive: () => listActiveContexts(),
+    get: (id: string) => getContext({ data: { id } }),
+    create: (data: Pick<NewContext, 'name' | 'color'> & Partial<NewContext>) =>
+      createContext({
+        data: {
+          name: data.name,
+          description: nu(data.description),
+          color: data.color,
+          icon: nu(data.icon),
+        },
+      }),
+    update: (id: string, data: Partial<Context>) =>
+      updateContext({
+        data: {
+          id,
+          name: data.name,
+          description: nu(data.description),
+          color: data.color,
+          icon: nu(data.icon),
+        },
+      }),
+    archive: (id: string) => archiveContext({ data: { id } }),
+  },
   projects: {
     list: () => listProjects(),
     get: (id: string) => getProject({ data: { id } }),
@@ -50,6 +93,7 @@ export const api = {
         data: {
           name: data.name!,
           description: nu(data.description),
+          context: nu(data.context),
           color: nu(data.color),
         },
       }),
@@ -59,6 +103,7 @@ export const api = {
           id,
           name: data.name ?? undefined,
           description: nu(data.description),
+          context: nu(data.context),
           color: nu(data.color),
           position: nu(data.position),
         },
