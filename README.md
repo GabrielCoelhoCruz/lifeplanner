@@ -1,6 +1,6 @@
 # Taski
 
-**Suas tarefas. Seu ritmo. Seu dia organizado.**
+**Your tasks. Your pace. Your day, organized.**
 
 Taski is a fast, keyboard-first task and project planner for people who want to actually get things done — not wrestle with their tool. Organize work into projects, plan your day, run focus sessions with the built-in Pomodoro, and move through everything without ever taking your hands off the keyboard.
 
